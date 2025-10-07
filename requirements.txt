@@ -1,6 +1,11 @@
 flask
-pandas
 requests
+pandas
+numpy
+python-dotenv
+Flask-Caching
+Flask-Cors
+redis
 lightgbm
 scikit-learn
 catboost

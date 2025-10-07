@@ -1,77 +1,78 @@
 from flask import Flask, render_template, request, jsonify
-import requests
+from flask_caching import Cache
+from flask_cors import CORS
+from config import Config
+from services import api_nba
 from prediction import predict_player_stats
 
-app = Flask(__name__)
+cache = Cache()
 
-def search_players(query):
-    url = "https://api-nba-v1.p.rapidapi.com/players"
-    querystring = {"search": query}
-    headers = {
-        "x-rapidapi-key": "4cbcf8a971msh3985c29941e0d6fp1d4320jsn0fd9ac1a026e",
-        "x-rapidapi-host": "api-nba-v1.p.rapidapi.com"
-    }
-    try:
-        response = requests.get(url, headers=headers, params=querystring)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as e:
-        print(f"API request error: {e}")
-        return {"response": []}
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    cache.init_app(app, config={
+        "CACHE_TYPE": app.config.get("CACHE_TYPE", "SimpleCache"),
+        "CACHE_REDIS_URL": app.config.get("CACHE_REDIS_URL", "")
+    })
 
-def get_player_details(player_id):
-    url = "https://api-nba-v1.p.rapidapi.com/players"
-    querystring = {"id": str(player_id)}
-    headers = {
-        "x-rapidapi-key": "4cbcf8a971msh3985c29941e0d6fp1d4320jsn0fd9ac1a026e",
-        "x-rapidapi-host": "api-nba-v1.p.rapidapi.com"
-    }
-    try:
-        response = requests.get(url, headers=headers, params=querystring)
-        response.raise_for_status()
-        data = response.json()
-        if data.get('response'):
-            return data['response'][0]
-    except requests.exceptions.RequestException as e:
-        print(f"API request error: {e}")
-    return None
+    # Allow your Vercel site to call the API (tighten origin later)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+    # (Optional) existing HTML routes if you already use templates
+    @app.route("/")
+    def home():
+        return render_template("index.html")
 
-@app.route('/search', methods=['POST'])
-def search():
-    query = request.form['query']
-    players = search_players(query)
-    return render_template('results.html', players=players['response'])
+    @app.post("/search")
+    @cache.cached(timeout=60, query_string=True)
+    def search_html():
+        q = request.form.get("query","").strip()
+        data = api_nba.search_players(q) if q else {"response":[]}
+        return render_template("results.html", players=data.get("response", []))
 
-@app.route('/send_player_id', methods=['POST'])
-def send_player_id():
-    data = request.get_json()
-    player_id = data.get('player_id')
-    print(f"Received player ID: {player_id}")
-    return jsonify({"status": "success", "player_id": player_id})
+    # ---- JSON endpoints used by the Vercel frontend ----
+    @app.get("/api/players")
+    @cache.cached(timeout=60, query_string=True)
+    def api_players():
+        q = request.args.get("q","").strip()
+        if not q:
+            return jsonify({"players": []})
+        raw = api_nba.search_players(q).get("response", [])
+        players = [{
+            "id": p.get("id"),
+            "firstname": p.get("firstname"),
+            "lastname": p.get("lastname"),
+            "team": (p.get("team") or {}).get("name"),
+            "number": p.get("leagues",{}).get("standard",{}).get("jersey"),
+        } for p in raw]
+        return jsonify({"players": players})
 
-@app.route('/predict/<player_id>')
-def predict(player_id):
-    print(f"Predicting stats for player ID: {player_id}")
-    player = get_player_details(player_id)
-    if player is None:
-        return render_template('error.html', message="Player not found")
-    print(f"Player details: {player}")
-    try:
-        points, assists, rebounds = predict_player_stats(player_id)
-        prediction = {
-            "Points": points,
-            "Assists": assists,
-            "Rebounds": rebounds
-        }
-        return render_template('prediction.html', player=player, prediction=prediction)
-    except Exception as e:
-        print(f"Prediction error: {e}")
-        return render_template('error.html', message="Player not found")
+    @app.get("/api/predict")
+    @cache.cached(timeout=30, query_string=True)
+    def api_predict():
+        pid = request.args.get("player_id")
+        if not pid:
+            return jsonify({"error":"player_id required"}), 400
+        pts, ast, reb = predict_player_stats(pid)
+        pd = api_nba.player_details(pid).get("response", [{}])[0]
+        player = {"id": pd.get("id"),
+                  "name": f"{pd.get('firstname','')} {pd.get('lastname','')}".strip(),
+                  "team": (pd.get("team") or {}).get("name")}
+        return jsonify({"player": player, "prediction": {
+            "points": round(pts,1), "assists": round(ast,1), "rebounds": round(reb,1)
+        }})
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    @app.get("/api/schedule")
+    @cache.cached(timeout=20, query_string=True)
+    def api_schedule():
+        from datetime import date
+        date_iso = request.args.get("date", date.today().isoformat())
+        return jsonify(api_nba.daily_schedule(date_iso))
+    # ----------------------------------------------------
+
+    return app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=True)
