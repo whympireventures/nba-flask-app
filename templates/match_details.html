@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="static/css/styles.css">
+        <title>Match Details</title>
+    </head>
+<body>
+    <div class="container">
+    <h1>Match Details</h1>
+    <h2>Teams</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Home Team</th>
+                <th>Away Team</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><img src="{{ team1_info.response[0].logo }}" alt="{{ team1_info.response[0].name }} Logo" width="50"> {{ team1_info.response[0].name }}</td>
+                <td><img src="{{ team2_info.response[0].logo }}" alt="{{ team2_info.response[0].name }} Logo" width="50"> {{ team2_info.response[0].name }}</td>
+            </tr>
+        </tbody>
+    </table>
+<h2>Team Statistics</h2>
+    <table>
+        <tr>
+            <th>Statistic</th>
+            <th>{{ team1_info.response[0].name }}</th>
+            <th>{{ team2_info.response[0].name }}</th>
+        </tr>
+        <tr>
+            <td>Games</td>
+            <td>{{ team1_stats.response[0].games }}</td>
+            <td>{{ team2_stats.response[0].games }}</td>
+        </tr>
+        <tr>
+            <td>Fast Break Points</td>
+            <td>{{ team1_stats.response[0].fastBreakPoints }}</td>
+            <td>{{ team2_stats.response[0].fastBreakPoints }}</td>
+        </tr>
+        <tr>
+            <td>Points in Paint</td>
+            <td>{{ team1_stats.response[0].pointsInPaint }}</td>
+            <td>{{ team2_stats.response[0].pointsInPaint }}</td>
+        </tr>
+        <tr>
+            <td>Biggest Lead</td>
+            <td>{{ team1_stats.response[0].biggestLead }}</td>
+            <td>{{ team2_stats.response[0].biggestLead }}</td>
+        </tr>
+        <tr>
+            <td>Second Chance Points</td>
+            <td>{{ team1_stats.response[0].secondChancePoints }}</td>
+            <td>{{ team2_stats.response[0].secondChancePoints }}</td>
+        </tr>
+        <tr>
+            <td>Points Off Turnovers</td>
+            <td>{{ team1_stats.response[0].pointsOffTurnovers }}</td>
+            <td>{{ team2_stats.response[0].pointsOffTurnovers }}</td>
+        </tr>
+        <tr>
+            <td>Longest Run</td>
+            <td>{{ team1_stats.response[0].longestRun }}</td>
+            <td>{{ team2_stats.response[0].longestRun }}</td>
+        </tr>
+        <tr>
+            <td>Points</td>
+            <td>{{ team1_stats.response[0].points }}</td>
+            <td>{{ team2_stats.response[0].points }}</td>
+        </tr>
+        <tr>
+            <td>Field Goals Made</td>
+            <td>{{ team1_stats.response[0].fgm }}</td>
+            <td>{{ team2_stats.response[0].fgm }}</td>
+        </tr>
+        <tr>
+            <td>Field Goals Attempted</td>
+            <td>{{ team1_stats.response[0].fga }}</td>
+            <td>{{ team2_stats.response[0].fga }}</td>
+        </tr>
+        <tr>
+            <td>Field Goal Percentage</td>
+            <td>{{ team1_stats.response[0].fgp }}</td>
+            <td>{{ team2_stats.response[0].fgp }}</td>
+        </tr>
+        <tr>
+            <td>Free Throws Made</td>
+            <td>{{ team1_stats.response[0].ftm }}</td>
+            <td>{{ team2_stats.response[0].ftm }}</td>
+        </tr>
+        <tr>
+            <td>Free Throws Attempted</td>
+            <td>{{ team1_stats.response[0].fta }}</td>
+            <td>{{ team2_stats.response[0].fta }}</td>
+        </tr>
+        <tr>
+            <td>Free Throw Percentage</td>
+            <td>{{ team1_stats.response[0].ftp }}</td>
+            <td>{{ team2_stats.response[0].ftp }}</td>
+        </tr>
+        <tr>
+            <td>3-Pointers Made</td>
+            <td>{{ team1_stats.response[0].tpm }}</td>
+            <td>{{ team2_stats.response[0].tpm }}</td>
+        </tr>
+        <tr>
+            <td>3-Pointers Attempted</td>
+            <td>{{ team1_stats.response[0].tpa }}</td>
+            <td>{{ team2_stats.response[0].tpa }}</td>
+        </tr>
+        <tr>
+            <td>3-Point Percentage</td>
+            <td>{{ team1_stats.response[0].tpp }}</td>
+            <td>{{ team2_stats.response[0].tpp }}</td>
+        </tr>
+        <tr>
+            <td>Offensive Rebounds</td>
+            <td>{{ team1_stats.response[0].offReb }}</td>
+            <td>{{ team2_stats.response[0].offReb }}</td>
+        </tr>
+        <tr>
+            <td>Defensive Rebounds</td>
+            <td>{{ team1_stats.response[0].defReb }}</td>
+            <td>{{ team2_stats.response[0].defReb }}</td>
+        </tr>
+        <tr>
+            <td>Total Rebounds</td>
+            <td>{{ team1_stats.response[0].totReb }}</td>
+            <td>{{ team2_stats.response[0].totReb }}</td>
+        </tr>
+        <tr>
+            <td>Assists</td>
+            <td>{{ team1_stats.response[0].assists }}</td>
+            <td>{{ team2_stats.response[0].assists }}</td>
+        </tr>
+        <tr>
+            <td>Personal Fouls</td>
+            <td>{{ team1_stats.response[0].pFouls }}</td>
+            <td>{{ team2_stats.response[0].pFouls }}</td>
+        </tr>
+        <tr>
+            <td>Steals</td>
+            <td>{{ team1_stats.response[0].steals }}</td>
+            <td>{{ team2_stats.response[0].steals }}</td>
+        </tr>
+        <tr>
+            <td>Turnovers</td>
+            <td>{{ team1_stats.response[0].turnovers }}</td>
+            <td>{{ team2_stats.response[0].turnovers }}</td>
+        </tr>
+        <tr>
+            <td>Blocks</td>
+            <td>{{ team1_stats.response[0].blocks }}</td>
+            <td>{{ team2_stats.response[0].blocks }}</td>
+        </tr>
+        <tr>
+            <td>Plus Minus</td>
+            <td>{{ team1_stats.response[0].plusMinus }}</td>
+            <td>{{ team2_stats.response[0].plusMinus }}</td>
+        </tr>
+    </table>
+</table>
+<h2>Team Standings</h2>
+<table>
+    <tr>
+        <th>Team</th>
+        <th>League</th>
+        <th>Season</th>
+        <th>Conference</th>
+        <th>Conference Rank</th>
+        <th>Division</th>
+        <th>Division Rank</th>
+        <th>Games Behind</th>
+        <th>Win-Loss Record</th>
+        <th>Win Percentage</th>
+        <th>Home Wins</th>
+        <th>Away Wins</th>
+        <th>Home Losses</th>
+        <th>Away Losses</th>
+        <th>Last 10 Games</th>
+        <th>Streak</th>
+        <th>Streak Direction</th>
+    </tr>
+    <tr>
+        <td>{{ team1_standing.response[0].team.name }}</td>
+        <td>{{ team1_standing.response[0].league }}</td>
+        <td>{{ team1_standing.response[0].season }}</td>
+        <td>{{ team1_standing.response[0].conference.name }}</td>
+        <td>{{ team1_standing.response[0].conference.rank }}</td>
+        <td>{{ team1_standing.response[0].division.name }}</td>
+        <td>{{ team1_standing.response[0].division.rank }}</td>
+        <td>{{ team1_standing.response[0].gamesBehind }}</td>
+        <td>{{ team1_standing.response[0].win.total }} - {{ team1_standing.response[0].loss.total }}</td>
+        <td>{{ team1_standing.response[0].win.percentage }}</td>
+        <td>{{ team1_standing.response[0].win.home }}</td>
+        <td>{{ team1_standing.response[0].win.away }}</td>
+        <td>{{ team1_standing.response[0].loss.home }}</td>
+        <td>{{ team1_standing.response[0].loss.away }}</td>
+        <td>{{ team1_standing.response[0].win.lastTen }} - {{ team1_standing.response[0].loss.lastTen }}</td>
+        <td>{{ team1_standing.response[0].streak }}</td>
+        <td>{{ 'Win' if team1_standing.response[0].winStreak else 'Loss' }}</td>
+    </tr>
+    <tr>
+        <td>{{ team2_standing.response[0].team.name }}</td>
+        <td>{{ team2_standing.response[0].league }}</td>
+        <td>{{ team2_standing.response[0].season }}</td>
+        <td>{{ team2_standing.response[0].conference.name }}</td>
+        <td>{{ team2_standing.response[0].conference.rank }}</td>
+        <td>{{ team2_standing.response[0].division.name }}</td>
+        <td>{{ team2_standing.response[0].division.rank }}</td>
+        <td>{{ team2_standing.response[0].gamesBehind }}</td>
+        <td>{{ team2_standing.response[0].win.total }} - {{ team2_standing.response[0].loss.total }}</td>
+        <td>{{ team2_standing.response[0].win.percentage }}</td>
+        <td>{{ team2_standing.response[0].win.home }}</td>
+        <td>{{ team2_standing.response[0].win.away }}</td>
+        <td>{{ team2_standing.response[0].loss.home }}</td>
+        <td>{{ team2_standing.response[0].loss.away }}</td>
+        <td>{{ team2_standing.response[0].win.lastTen }} - {{ team2_standing.response[0].loss.lastTen }}</td>
+        <td>{{ team2_standing.response[0].streak }}</td>
+        <td>{{ 'Win' if team2_standing.response[0].winStreak else 'Loss' }}</td>
+    </tr>
+</table>
+<h2>Player Statistics</h2>
+    <h3>{{ team1_info.response[0].name }}</h3>
+    <table>
+        <tr>
+            <th>Player</th>
+            <th>Position</th>
+            <th>Minutes</th>
+            <th>Points</th>
+            <th>FGM</th>
+            <th>FGA</th>
+            <th>FG%</th>
+            <th>FTM</th>
+            <th>FTA</th>
+            <th>FT%</th>
+            <th>3PM</th>
+            <th>3PA</th>
+            <th>3P%</th>
+            <th>Offensive Rebounds</th>
+            <th>Defensive Rebounds</th>
+            <th>Total Rebounds</th>
+            <th>Assists</th>
+            <th>Personal Fouls</th>
+            <th>Steals</th>
+            <th>Turnovers</th>
+            <th>Blocks</th>
+            <th>Plus/Minus</th>
+        </tr>
+        {% for player in team1_players.response %}
+        <tr>
+            <td>{{ player.player.firstname }} {{ player.player.lastname }}</td>
+            <td>{{ player.pos }}</td>
+            <td>{{ player.min }}</td>
+            <td>{{ player.points }}</td>
+            <td>{{ player.fgm }}</td>
+            <td>{{ player.fga }}</td>
+            <td>{{ player.fgp }}</td>
+            <td>{{ player.ftm }}</td>
+            <td>{{ player.fta }}</td>
+            <td>{{ player.ftp }}</td>
+            <td>{{ player.tpm }}</td>
+            <td>{{ player.tpa }}</td>
+            <td>{{ player.tpp }}</td>
+            <td>{{ player.offReb }}</td>
+            <td>{{ player.defReb }}</td>
+            <td>{{ player.totReb }}</td>
+            <td>{{ player.assists }}</td>
+            <td>{{ player.pFouls }}</td>
+            <td>{{ player.steals }}</td>
+            <td>{{ player.turnovers }}</td>
+            <td>{{ player.blocks }}</td>
+            <td>{{ player.plusMinus }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h3>{{ team2_info.response[0].name }}</h3>
+    <table>
+        <tr>
+            <th>Player</th>
+            <th>Position</th>
+            <th>Minutes</th>
+            <th>Points</th>
+            <th>FGM</th>
+            <th>FGA</th>
+            <th>FG%</th>
+            <th>FTM</th>
+            <th>FTA</th>
+            <th>FT%</th>
+            <th>3PM</th>
+            <th>3PA</th>
+            <th>3P%</th>
+            <th>Offensive Rebounds</th>
+            <th>Defensive Rebounds</th>
+            <th>Total Rebounds</th>
+            <th>Assists</th>
+            <th>Personal Fouls</th>
+            <th>Steals</th>
+            <th>Turnovers</th>
+            <th>Blocks</th>
+            <th>Plus/Minus</th>
+        </tr>
+        {% for player in team2_players.response %}
+        <tr>
+            <td>{{ player.player.firstname }} {{ player.player.lastname }}</td>
+            <td>{{ player.pos }}</td>
+            <td>{{ player.min }}</td>
+            <td>{{ player.points }}</td>
+            <td>{{ player.fgm }}</td>
+            <td>{{ player.fga }}</td>
+            <td>{{ player.fgp }}</td>
+            <td>{{ player.ftm }}</td>
+            <td>{{ player.fta }}</td>
+            <td>{{ player.ftp }}</td>
+            <td>{{ player.tpm }}</td>
+            <td>{{ player.tpa }}</td>
+            <td>{{ player.tpp }}</td>
+            <td>{{ player.offReb }}</td>
+            <td>{{ player.defReb }}</td>
+            <td>{{ player.totReb }}</td>
+            <td>{{ player.assists }}</td>
+            <td>{{ player.pFouls }}</td>
+            <td>{{ player.steals }}</td>
+            <td>{{ player.turnovers }}</td>
+            <td>{{ player.blocks }}</td>
+            <td>{{ player.plusMinus }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>Head-to-Head</h2>
+    <table>
+        <tr>
+            <th>Game ID</th>
+            <th>Date</th>
+            <th>League</th>
+            <th>Season</th>
+            <th>Home Team</th>
+            <th>Home Score</th>
+            <th>Away Team</th>
+            <th>Away Score</th>
+        </tr>
+        {% for game in head_to_head.response %}
+        <tr>
+            <td>{{ game.id }}</td>
+            <td>{{ game.date.start }}</td>
+            <td>{{ game.league }}</td>
+            <td>{{ game.season }}</td>
+            <td>{{ game.teams.home.name }}</td>
+            <td>{{ game.teams.home.scores }}</td>
+            <td>{{ game.teams.visitors.name }}</td>
+            <td>{{ game.teams.visitors.scores}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>

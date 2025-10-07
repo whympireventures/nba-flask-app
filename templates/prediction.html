@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Prediction</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .prediction-card {
+            margin-top: 20px;
+        }
+        .player-info {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .prediction-details {
+            font-size: 1.2em;
+        }
+        .prediction-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .back-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Player Prediction</h1>
+        <div class="card prediction-card">
+            <div class="card-body">
+                <h2 class="card-title">Player: {{ player.firstname }} {{ player.lastname }}</h5>
+                <p class="player-info">
+                    <strong>Birth Date:</strong> {{ player.birth.date }}<br>
+                    <strong>Country:</strong> {{ player.birth.country }}<br>
+                    <strong>Height:</strong> {{ player.height.feets }}' {{ player.height.inches }}"<br>
+                    <strong>Weight:</strong> {{ player.weight.pounds }} lbs
+                </p>
+                <h6 class="prediction-title">Predicted Stats</h6>
+                <p class="prediction-details">
+                    <strong>Points(max +-3):</strong> {{ prediction.Points }}<br>
+                    <strong>Assists(max +-1.5):</strong> {{ prediction.Assists }}<br>
+                    <strong>Rebounds(max +-2):</strong> {{ prediction.Rebounds }}
+                </p>
+                <a href="/" class="btn btn-secondary back-button">Back to Search</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

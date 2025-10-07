@@ -1,0 +1,36 @@
+{% comment %} <head>
+    <!-- Link to Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Link to your custom stylesheet -->
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+<body class="container">
+    <header class="header">
+      <h1>NBA Game Viewer</h1>
+    </header>
+    <form class="form" method="post">
+      <label for="date" class="label">Select a date:</label>
+      <input type="date" id="date" name="date" required class="form-control"> <!-- Added Bootstrap class -->
+      <button type="submit" class="btn btn-primary">Submit</button> <!-- Added Bootstrap classes -->
+    </form>
+    <table class="table">
+      <thead class="thead-dark"> <!-- Added Bootstrap class for table header -->
+        <tr class="table-header">
+          <th>Date</th>
+          <th>Home Team</th>
+          <th>Away Team</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in upcoming_matches %}
+        <tr class="table-row">
+          <td>{{ match.date.start }}</td>
+          <td>{{ match.teams.home.name }}</td>
+          <td>{{ match.teams.visitors.name }}</td>
+          <td><a href="{{ url_for('match_details', match_id=match.id) }}?date={{ selected_date }}" class="btn btn-info">View Details</a></td> <!-- Added Bootstrap class -->
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</body> {% endcomment %}
