@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire — Underdog Value Plays</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --navy: #16314a;
+            --green: #1a7a4a;
+        }
+        body {
+            min-height: 100vh; margin: 0;
+            font-family: "Barlow", sans-serif; color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+        .page-shell { max-width: 1320px; margin: 0 auto; padding: 28px 16px 48px; }
+        .hero-card, .table-shell, .parlay-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+        }
+        .hero-card { padding: 24px; margin-bottom: 18px; }
+        .hero-card h1 {
+            margin: 0; font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 4vw, 3.2rem); letter-spacing: -0.04em;
+        }
+        .hero-card p { margin: 8px 0 0; color: var(--muted); font-size: 1.04rem; }
+        .summary-pill {
+            display: inline-flex; align-items: center; gap: 10px;
+            margin-top: 14px; margin-right: 10px; padding: 10px 14px;
+            border-radius: 999px; border: 1px solid var(--line);
+            background: rgba(255,255,255,0.9); font-weight: 700;
+        }
+        .summary-pill small { color: var(--muted); font-weight: 600; }
+        .toolbar {
+            display: flex; flex-wrap: wrap;
+            justify-content: space-between; align-items: flex-end;
+            gap: 16px; margin-bottom: 18px;
+        }
+        .filter-form { display: flex; gap: 10px; align-items: flex-end; }
+        .filter-form .form-control { height: 44px; border-radius: 12px; max-width: 140px; }
+        .filter-form .btn { height: 44px; border-radius: 999px; font-weight: 700; background: var(--navy); color: #fff; border: none; padding: 0 20px; }
+        .table-shell { overflow: hidden; margin-bottom: 32px; }
+        .table-shell table { margin: 0; font-size: 0.93rem; }
+        .table-shell thead th {
+            background: var(--navy); color: #fff;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 0.78rem; letter-spacing: 0.06em;
+            text-transform: uppercase; padding: 14px 16px; border: none;
+        }
+        .table-shell tbody td { padding: 13px 16px; vertical-align: middle; border-color: var(--line); }
+        .table-shell tbody tr:hover { background: rgba(26,122,74,0.04); }
+        .diff-badge {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 999px; font-weight: 700; font-size: 0.82rem;
+            background: rgba(217,111,50,0.12); color: var(--accent);
+        }
+        .diff-badge.big { background: rgba(26,122,74,0.12); color: var(--green); }
+        .ud-line { font-weight: 700; color: var(--green); font-size: 1rem; }
+        .pp-line { color: var(--muted); text-decoration: line-through; }
+        .section-heading {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 16px;
+        }
+        .parlay-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px; margin-bottom: 32px;
+        }
+        .parlay-card { padding: 20px 22px; }
+        .parlay-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+        }
+        .parlay-size-label {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.1rem; font-weight: 700; color: var(--navy);
+        }
+        .payout-badge {
+            background: var(--navy); color: #fff;
+            padding: 4px 14px; border-radius: 999px; font-weight: 700; font-size: 0.88rem;
+        }
+        .parlay-pick {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 0.9rem;
+        }
+        .parlay-pick:last-child { border-bottom: none; }
+        .pick-player { font-weight: 700; }
+        .pick-meta { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
+        .pick-line-wrap { text-align: right; }
+        .pick-over { font-weight: 700; color: var(--green); font-size: 1rem; }
+        .pick-gap { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+        .alert-banner {
+            background: rgba(217,111,50,0.1); border: 1px solid rgba(217,111,50,0.3);
+            border-radius: 14px; padding: 14px 18px; margin-bottom: 18px;
+            color: var(--accent); font-weight: 600;
+        }
+        .nav-back { margin-bottom: 18px; }
+        .nav-back a { color: var(--navy); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .nav-back a:hover { text-decoration: underline; }
+        .empty-state { padding: 48px; text-align: center; color: var(--muted); }
+        .ud-tag {
+            display: inline-block; background: rgba(22,49,74,0.1); color: var(--navy);
+            padding: 2px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="nav-back"><a href="/">&#8592; Home</a></div>
+
+    <div class="hero-card">
+        <h1>Underdog Value Plays</h1>
+        <p>Players where Underdog has the better number — OVER when their line is lower, UNDER when their line is higher than PrizePicks.</p>
+        <div>
+            <span class="summary-pill">
+                <small>Value Plays</small>
+                <strong>{{ total_discrepancies }}</strong>
+            </span>
+            <span class="summary-pill">
+                <small>Min Gap</small>
+                <strong>{{ "%.1f"|format(min_diff) }}</strong>
+            </span>
+        </div>
+    </div>
+
+    {% if pp_error %}
+    <div class="alert-banner">PrizePicks unavailable: {{ pp_error }}</div>
+    {% endif %}
+    {% if ud_error %}
+    <div class="alert-banner">Underdog unavailable: {{ ud_error }}</div>
+    {% endif %}
+
+    {% if discrepancies %}
+
+    <div class="toolbar">
+        <div class="section-heading">All Underdog Value Plays</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+            <form class="filter-form" method="get">
+                <div>
+                    <label style="font-size:0.8rem;font-weight:600;margin-bottom:4px;display:block;">Min Line Gap</label>
+                    <input type="number" name="min_diff" class="form-control" step="0.5" min="0" value="{{ "%.1f"|format(min_diff) }}">
+                </div>
+                <button type="submit" class="btn">Filter</button>
+            </form>
+            <a href="/line-discrepancy/export?min_diff={{ "%.1f"|format(min_diff) }}" class="btn" style="height:44px;border-radius:999px;font-weight:700;background:var(--green);color:#fff;border:none;padding:0 20px;display:inline-flex;align-items:center;">Export CSV</a>
+        </div>
+    </div>
+
+    <div class="table-shell">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Market</th>
+                    <th>Opp</th>
+                    <th>Underdog Line</th>
+                    <th>PrizePicks Line</th>
+                    <th>Gap</th>
+                    <th>Bet</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in discrepancies %}
+                <tr>
+                    <td><strong>{{ row.player_name }}</strong></td>
+                    <td>{{ row.market }}</td>
+                    <td>{{ row.opponent_abbr }}</td>
+                    <td class="ud-line">{{ "%.1f"|format(row.ud_line) }}</td>
+                    <td class="pp-line">{{ "%.1f"|format(row.pp_line) }}</td>
+                    <td>
+                        <span class="diff-badge {% if row.diff >= 1.5 %}big{% endif %}">
+                            +{{ "%.1f"|format(row.diff) }}
+                        </span>
+                    </td>
+                    <td><span class="ud-tag">UD {{ row.bet }} {{ "%.1f"|format(row.ud_line) }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-heading">Parlay Builder</div>
+    <p style="color:var(--muted);margin-bottom:20px;">Top discrepancy plays grouped by parlay size — all bets on Underdog OVER.</p>
+
+    <div class="parlay-grid">
+        {% for group in parlay_groups %}
+        <div class="parlay-card">
+            <div class="parlay-header">
+                <span class="parlay-size-label">{{ group.size }}-Pick Parlay</span>
+                <span class="payout-badge">{{ "%.0f"|format(group.payout) }}x</span>
+            </div>
+            {% for pick in group.picks %}
+            <div class="parlay-pick">
+                <div>
+                    <div class="pick-player">{{ pick.player_name }}</div>
+                    <div class="pick-meta">{{ pick.market }} &middot; vs {{ pick.opponent_abbr }}</div>
+                </div>
+                <div class="pick-line-wrap">
+                    <div class="pick-over">{{ pick.bet }} {{ "%.1f"|format(pick.ud_line) }}</div>
+                    <div class="pick-gap">PP line: {{ "%.1f"|format(pick.pp_line) }} &nbsp;(+{{ "%.1f"|format(pick.diff) }})</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="toolbar">
+        <div class="section-heading">Underdog Value Plays</div>
+        <form class="filter-form" method="get">
+            <div>
+                <label style="font-size:0.8rem;font-weight:600;margin-bottom:4px;display:block;">Min Line Gap</label>
+                <input type="number" name="min_diff" class="form-control" step="0.5" min="0" value="{{ "%.1f"|format(min_diff) }}">
+            </div>
+            <button type="submit" class="btn">Filter</button>
+        </form>
+    </div>
+    <div class="table-shell">
+        <div class="empty-state">
+            <strong>No Underdog value plays found</strong><br>
+            <span>Either both boards aren't configured, no players match, or no plays have an Underdog line lower than PrizePicks by ≥ {{ "%.1f"|format(min_diff) }}.</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

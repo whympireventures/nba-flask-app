@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Scores — Whympire NBA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --navy: #16314a;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+
+        .page-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 16px 48px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-weight: 700;
+            font-family: "Barlow", sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-secondary {
+            background: rgba(22, 49, 74, 0.08);
+            border: 1px solid var(--line);
+            color: var(--ink);
+        }
+
+        .btn-secondary:hover { text-decoration: none; color: var(--ink); opacity: 0.8; }
+
+        .hero {
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            letter-spacing: -0.04em;
+        }
+
+        .hero p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 1rem;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #e03e2d;
+            margin-right: 6px;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .game-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 20px 22px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            position: relative;
+        }
+
+        .game-card.is-live {
+            border-color: rgba(224, 62, 45, 0.3);
+            box-shadow: 0 8px 28px rgba(224, 62, 45, 0.1);
+        }
+
+        .game-card.is-final {
+            opacity: 0.72;
+        }
+
+        .game-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .status-badge {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .status-live {
+            background: rgba(224, 62, 45, 0.12);
+            color: #c0291a;
+        }
+
+        .status-scheduled {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy);
+        }
+
+        .status-final {
+            background: rgba(23, 23, 23, 0.07);
+            color: var(--muted);
+        }
+
+        .status-postponed {
+            background: rgba(217, 111, 50, 0.12);
+            color: #b75523;
+        }
+
+        .period-detail {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .matchup {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .team-block {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .team-block.home { text-align: right; }
+        .team-block.away { text-align: left; }
+
+        .team-abbr {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .team-name {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team-record {
+            font-size: 0.74rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .score-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .score {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            min-width: 44px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .score.winning { color: var(--ink); }
+        .score.losing { color: var(--muted); }
+        .score.no-score { color: var(--muted); font-size: 1.1rem; }
+
+        .score-divider {
+            font-size: 1.2rem;
+            color: var(--line);
+            font-weight: 300;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .refresh-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 28px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        #refresh-countdown {
+            font-weight: 700;
+            color: var(--navy);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="toolbar">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+            <a href="/underdog-board" class="btn btn-secondary">Underdog Board</a>
+        </div>
+
+        <div class="hero">
+            <h1>
+                {% if any_live %}<span class="live-dot"></span>{% endif %}
+                Live Scores
+            </h1>
+            <p>Today's NBA games via ESPN. {{ 'Auto-refreshing every 30 seconds.' if any_live else 'No games in progress right now.' }}</p>
+        </div>
+
+        {% if games %}
+        <div class="games-grid">
+            {% for game in games %}
+            {% set is_live = game.status == 'live' %}
+            {% set is_final = game.status == 'final' %}
+            {% set has_score = game.home_score is not none and game.away_score is not none %}
+            {% set home_winning = has_score and game.home_score | int > game.away_score | int %}
+            {% set away_winning = has_score and game.away_score | int > game.home_score | int %}
+
+            <div class="game-card {% if is_live %}is-live{% elif is_final %}is-final{% endif %}">
+                <div class="game-status-bar">
+                    {% if is_live %}
+                    <span class="status-badge status-live"><span class="live-dot"></span>Live</span>
+                    <span class="period-detail">{{ game.period_detail }}</span>
+                    {% elif is_final %}
+                    <span class="status-badge status-final">Final</span>
+                    <span class="period-detail"></span>
+                    {% elif game.status == 'postponed' %}
+                    <span class="status-badge status-postponed">Postponed</span>
+                    <span class="period-detail"></span>
+                    {% else %}
+                    <span class="status-badge status-scheduled">Upcoming</span>
+                    <span class="period-detail">{{ game.status_detail }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="matchup">
+                    <div class="team-block away">
+                        <div class="team-abbr">{{ game.away_abbr }}</div>
+                        <div class="team-name">{{ game.away_name }}</div>
+                        {% if game.away_record %}<div class="team-record">{{ game.away_record }}</div>{% endif %}
+                    </div>
+
+                    <div class="score-block">
+                        {% if has_score and (is_live or is_final) %}
+                        <div class="score {{ 'winning' if away_winning else 'losing' }}">{{ game.away_score }}</div>
+                        <div class="score-divider">–</div>
+                        <div class="score {{ 'winning' if home_winning else 'losing' }}">{{ game.home_score }}</div>
+                        {% else %}
+                        <div class="score no-score">vs</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="team-block home">
+                        <div class="team-abbr">{{ game.home_abbr }}</div>
+                        <div class="team-name">{{ game.home_name }}</div>
+                        {% if game.home_record %}<div class="team-record">{{ game.home_record }}</div>{% endif %}
+                    </div>
+                </div>
+                {% if is_live or is_final %}
+                <div style="margin-top:14px; text-align:center;">
+                    <a href="/live-scores/{{ game.espn_game_id }}" style="font-size:0.85rem; font-weight:700; color:var(--navy); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:6px 14px;">
+                        Box Score
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No games found for today.</div>
+        {% endif %}
+
+        {% if any_live %}
+        <div class="refresh-bar">
+            Auto-refreshing in <span id="refresh-countdown">30</span>s
+        </div>
+        <script>
+            let seconds = 30;
+            const el = document.getElementById('refresh-countdown');
+            setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    window.location.reload();
+                } else {
+                    el.textContent = seconds;
+                }
+            }, 1000);
+        </script>
+        {% endif %}
+    </div>
+</body>
+</html>

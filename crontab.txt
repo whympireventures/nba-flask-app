@@ -1,0 +1,15 @@
+# NBA Flask App — Server Cron Jobs
+# Install: crontab -e  then paste these lines
+# Replace /path/to with your actual server path (e.g. /home/ubuntu/nba-app)
+
+# Scrape Underdog vs PrizePicks lines: 11am, 2pm, 6pm daily
+0 11,14,18 * * * cd /path/to && .venv/bin/python snapshot_discrepancies.py >> logs/snapshot.log 2>&1
+
+# Ingest latest game results nightly at 2am
+0 2 * * * cd /path/to && .venv/bin/python data_ingest.py --seasons 2025-26 >> logs/ingest.log 2>&1
+
+# Retrain models every Monday at 3am (after ingest)
+0 3 * * 1 cd /path/to && .venv/bin/python train_models.py >> logs/train.log 2>&1
+
+# Keep Flask running via gunicorn (use systemd instead for production — see below)
+# @reboot cd /path/to && .venv/bin/gunicorn -w 2 -b 0.0.0.0:5001 app:app >> logs/gunicorn.log 2>&1

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f7f2e9;
+            --panel: rgba(255, 252, 248, 0.95);
+            --ink: #171717;
+            --muted: #61605d;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(22, 49, 74, 0.14), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(217, 111, 50, 0.18), transparent 30%),
+                linear-gradient(160deg, #f9f4ec 0%, #f2ede6 48%, #ebe6df 100%);
+        }
+
+        .page-shell {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 38px 16px 56px;
+        }
+
+        .prediction-card {
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            overflow: hidden;
+            background: var(--panel);
+            box-shadow: 0 24px 65px rgba(0, 0, 0, 0.1);
+        }
+
+        .prediction-header {
+            padding: 30px 30px 10px;
+        }
+
+        .prediction-header h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            letter-spacing: -0.04em;
+        }
+
+        .prediction-header p {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .mode-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(22, 49, 74, 0.08);
+            border: 1px solid var(--line);
+            font-weight: 700;
+        }
+
+        .mode-banner small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px 30px 30px;
+        }
+
+        .player-info-grid,
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .info-card,
+        .prediction-stat {
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+            padding: 16px 18px;
+        }
+
+        .info-label,
+        .stat-label {
+            display: block;
+            font-size: 0.84rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .matchup-banner {
+            margin: 20px 0;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(22, 49, 74, 0.96), rgba(19, 41, 61, 0.93));
+            color: #fff;
+        }
+
+        .matchup-banner strong {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .prediction-title {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.35rem;
+            margin: 22px 0 14px;
+        }
+
+        .prediction-stat .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .line-row {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+            font-size: 0.92rem;
+            color: var(--muted);
+        }
+
+        .calibration-row {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            color: var(--muted);
+        }
+
+        .edge-pill {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .edge-over {
+            background: rgba(36, 127, 68, 0.14);
+            color: #1f6f3e;
+        }
+
+        .edge-under {
+            background: rgba(170, 67, 42, 0.14);
+            color: #9c3e22;
+        }
+
+        .edge-neutral {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy, #16314a);
+        }
+
+        .signal-pill {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 8px;
+            margin-left: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .signal-best {
+            background: rgba(217, 111, 50, 0.16);
+            color: #b75523;
+        }
+
+        .signal-lean {
+            background: rgba(36, 127, 68, 0.14);
+            color: #1f6f3e;
+        }
+
+        .signal-pass {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy, #16314a);
+        }
+
+        .signal-note {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .tracking-banner {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+            color: var(--muted);
+        }
+
+        .source-banner {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(22, 49, 74, 0.08);
+            border: 1px solid var(--line);
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .calibration-banner {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(217, 111, 50, 0.08);
+            border: 1px solid var(--line);
+            color: var(--ink);
+        }
+
+        .back-button {
+            margin-top: 24px;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="card prediction-card">
+            <div class="prediction-header">
+                <h1>Whympire NBA Sports Predictor</h1>
+                <p>Let&apos;s win some money with a prediction snapshot built from recent performance and matchup context.</p>
+                <div class="mode-banner">{{ data_mode.label }} <small>{{ data_mode.detail }}</small></div>
+            </div>
+            <div class="card-body">
+                <div class="player-info-grid">
+                    <div class="info-card">
+                        <span class="info-label">Birth Date</span>
+                        <strong>{{ player.birth.date if player.birth.date else 'N/A' }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-label">Country</span>
+                        <strong>{{ player.birth.country if player.birth.country else 'N/A' }}</strong>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-label">Height</span>
+                        <strong>{{ player.height.feets }}' {{ player.height.inches }}"</strong>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-label">Weight</span>
+                        <strong>{{ player.weight.pounds }} lbs</strong>
+                    </div>
+                </div>
+                {% if matchup and (matchup.opponent_abbr or matchup.game_date) %}
+                <div class="matchup-banner">
+                    <div><strong>Upcoming Opponent:</strong> {{ matchup.opponent_abbr if matchup.opponent_abbr else 'Not provided' }}</div>
+                    <div><strong>Game Date:</strong> {{ matchup.game_date if matchup.game_date else 'Not provided' }}</div>
+                    <div><strong>Expected Minutes:</strong> {{ prediction_payload.expected_minutes if prediction_payload.expected_minutes else 'N/A' }}</div>
+                </div>
+                {% endif %}
+                {% if line_source_notice %}
+                <div class="source-banner">{{ line_source_notice }}</div>
+                {% endif %}
+                <div class="calibration-banner">
+                    Calibrated view uses your scored post-game history to adjust future predictions by market. Raw model outputs are still what get logged for accuracy tracking.
+                </div>
+                <h6 class="prediction-title">Predicted Stat Line</h6>
+                <div class="prediction-grid">
+                    {% for card in market_cards %}
+                    <div class="prediction-stat">
+                        <span class="stat-label">{{ card.market }}</span>
+                        <div class="stat-value">{{ card.prediction }}</div>
+                        <small>
+                            {% if card.market == 'Points' %}
+                                Typical error band: about +/-3
+                            {% elif card.market == 'Assists' %}
+                                Typical error band: about +/-1.5
+                            {% elif card.market == 'Rebounds' %}
+                                Typical error band: about +/-2
+                            {% else %}
+                                Combo prop view
+                            {% endif %}
+                        </small>
+                        <div class="line-row">
+                            Sportsbook line:
+                            <strong>{% if card.line is not none %}{{ card.line }}{% else %}Not entered{% endif %}</strong>
+                        </div>
+                        <div class="calibration-row">
+                            Raw model: <strong>{{ card.raw_prediction }}</strong>
+                            {% if card.model_confidence_score is not none %}
+                                <br>Model confidence: <strong>{{ card.model_confidence_label }}</strong> ({{ card.model_confidence_score }}%)
+                                {% if card.model_error_band is not none %}
+                                    <br>Expected error band: <strong>+/-{{ card.model_error_band }}</strong>
+                                {% endif %}
+                            {% endif %}
+                            {% if card.calibration_applied %}
+                                <br>Calibrated: <strong>{{ card.calibrated_prediction }}</strong> after a
+                                {% if card.calibration_bias > 0 %}+{% endif %}{{ card.calibration_bias }} market bias adjustment
+                                <br>Confidence: <strong>{{ card.calibration_confidence }}</strong> from {{ card.calibration_count }} scored rows
+                                {% if card.calibration_mae is not none %}
+                                    <br>Post-game MAE: <strong>{{ card.calibration_mae }}</strong>
+                                {% endif %}
+                            {% else %}
+                                <br>Calibration not applied yet. Need at least 3 scored rows for this market.
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="edge-pill {{ card.edge_class }}">{{ card.edge_label }}</span>
+                            <span class="signal-pill {{ card.signal_class }}">{{ card.signal_label }}</span>
+                        </div>
+                        <div class="signal-note">{{ card.signal_note }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="tracking-banner">
+                    {% if tracking_summary.logged_rows > 0 %}
+                        Logged {{ tracking_summary.logged_rows }} market rows for {{ sportsbook }} in {{ tracking_summary.tracking_file }}.
+                    {% elif has_line_inputs %}
+                        Matching line snapshots were already logged in {{ tracking_summary.tracking_file }}.
+                    {% else %}
+                        Add sportsbook lines from the player search card to log model-vs-line edges into {{ tracking_summary.tracking_file }}.
+                    {% endif %}
+                </div>
+                <a href="/" class="btn btn-secondary back-button">Back to Search</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

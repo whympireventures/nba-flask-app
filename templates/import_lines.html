@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --navy: #16314a;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+
+        .page-shell {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 16px 48px;
+        }
+
+        .hero-card,
+        .panel,
+        .result-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+        }
+
+        .hero-card,
+        .panel {
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+
+        .hero-card h1,
+        .panel h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-card p,
+        .panel p {
+            margin: 8px 0 0;
+            color: var(--muted);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .toolbar .btn {
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+
+        .mode-pill,
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            margin-right: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+        }
+
+        .mode-pill small,
+        .summary-pill small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .form-grid .form-control,
+        .panel textarea {
+            border-radius: 16px;
+        }
+
+        .panel textarea {
+            min-height: 220px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .panel .btn {
+            margin-top: 14px;
+            border-radius: 16px;
+            background: var(--accent);
+            border: 0;
+            font-weight: 700;
+        }
+
+        .panel .btn[disabled] {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .error-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #9c3e22;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .result-card {
+            padding: 20px;
+        }
+
+        .result-card h3 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .result-meta {
+            margin: 8px 0 14px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .highlight-card {
+            padding: 16px 18px;
+            border-radius: 20px;
+            background: #fff;
+            border: 1px solid var(--line);
+        }
+
+        .highlight-card strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1rem;
+        }
+
+        .highlight-meta {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .best-card-banner {
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+        }
+
+        .market-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .market-table th,
+        .market-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--line);
+            font-size: 0.95rem;
+        }
+
+        .market-table th {
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .market-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .edge-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .edge-over {
+            background: rgba(36, 127, 68, 0.14);
+            color: #1f6f3e;
+        }
+
+        .edge-under {
+            background: rgba(170, 67, 42, 0.14);
+            color: #9c3e22;
+        }
+
+        .edge-neutral {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy);
+        }
+
+        .signal-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .signal-best {
+            background: rgba(217, 111, 50, 0.16);
+            color: #b75523;
+        }
+
+        .signal-lean {
+            background: rgba(36, 127, 68, 0.14);
+            color: #1f6f3e;
+        }
+
+        .signal-pass {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy);
+        }
+
+        .progress-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(23, 23, 23, 0.38);
+            backdrop-filter: blur(6px);
+            z-index: 50;
+        }
+
+        .progress-overlay.visible {
+            display: flex;
+        }
+
+        .progress-card {
+            width: min(520px, 100%);
+            padding: 24px;
+            border-radius: 28px;
+            background: rgba(255, 252, 248, 0.98);
+            border: 1px solid var(--line);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16);
+        }
+
+        .progress-card h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            letter-spacing: -0.04em;
+        }
+
+        .progress-card p {
+            margin: 8px 0 0;
+            color: var(--muted);
+        }
+
+        .progress-track {
+            margin-top: 18px;
+            width: 100%;
+            height: 14px;
+            border-radius: 999px;
+            background: rgba(22, 49, 74, 0.1);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 12%;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #d96f32 0%, #ef9b63 100%);
+            box-shadow: 0 8px 18px rgba(217, 111, 50, 0.35);
+            transition: width 0.35s ease;
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .progress-note {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(22, 49, 74, 0.06);
+            color: var(--ink);
+            font-size: 0.92rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="import-progress-overlay" class="progress-overlay" aria-hidden="true">
+        <div class="progress-card" role="status" aria-live="polite">
+            <h2>Running Import</h2>
+            <p id="import-progress-stage">Preparing your player card...</p>
+            <div class="progress-track">
+                <div id="import-progress-bar" class="progress-bar"></div>
+            </div>
+            <div class="progress-meta">
+                <span id="import-progress-percent">12%</span>
+                <span>Large imports can take up to a minute.</span>
+            </div>
+            <div class="progress-note">
+                Whympire is parsing the file, matching players, pulling stat context, and scoring each market.
+            </div>
+        </div>
+    </div>
+
+    <div class="page-shell">
+        <div class="toolbar">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        <section class="hero-card">
+            <h1>Bulk Line Import Tool</h1>
+            <p>Upload a `.csv` directly, or paste text, score every row against the model, and log the lines into your tracking file in one batch.</p>
+            <div class="mode-pill">{{ data_mode.label }} <small>{{ data_mode.detail }}</small></div>
+            {% if import_summary %}
+                <div class="summary-pill">Rows processed <small>{{ import_summary.processed_count }}</small></div>
+                <div class="summary-pill">Logged rows <small>{{ import_summary.logged_rows }}</small></div>
+                {% if import_summary.preview_applied %}
+                <div class="summary-pill">Preview mode <small>{{ import_summary.processed_count }} of {{ import_summary.total_candidate_rows }}</small></div>
+                {% endif %}
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <h2>Import CSV</h2>
+            <p>You can upload a `.csv` here using either the wide format with `line_points`, `line_assists`, and the other market columns, or a one-market-per-row format with `market`, `line`, optional `pick_side`, and optional `multiplier`. It also understands the raw multi-section PrizePicks text export you showed me.</p>
+            <form id="import-lines-form" action="/import-lines" method="POST" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <input type="text" name="default_sportsbook" class="form-control" placeholder="Default sportsbook" value="{{ default_values.sportsbook }}">
+                    <input type="date" name="default_game_date" class="form-control" value="{{ default_values.game_date }}">
+                    <input type="text" name="default_opponent_abbr" class="form-control" placeholder="Default opponent" value="{{ default_values.opponent_abbr }}">
+                </div>
+                <div class="form-group">
+                    <label for="preview-limit">Quick preview player limit</label>
+                    <input id="preview-limit" type="number" min="1" name="preview_limit" class="form-control" placeholder="Leave blank for full import" value="{{ default_values.preview_limit }}">
+                    <small class="form-text text-muted">Use `10` for a fast preview. Leave it blank to run the full file.</small>
+                </div>
+                <div class="form-group">
+                    <label for="csv-file">Upload CSV file</label>
+                    <input id="csv-file" type="file" name="csv_file" accept=".csv,.txt,text/csv,text/plain" class="form-control-file">
+                </div>
+                <div class="form-group">
+                    <label for="csv-text">Or paste CSV text</label>
+                    <textarea id="csv-text" name="csv_text" class="form-control">{{ default_values.csv_text }}</textarea>
+                </div>
+                <button id="import-lines-submit" type="submit" class="btn btn-primary">Run Import</button>
+            </form>
+        </section>
+
+        {% if import_errors %}
+        <section class="panel">
+            <h2>Import Notes</h2>
+            <ul class="error-list">
+                {% for error in import_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% if import_summary %}
+        <section class="panel">
+            <h2>Summary</h2>
+            <p>Processed {{ import_summary.processed_count }} player rows and logged {{ import_summary.logged_rows }} market rows into {{ import_summary.tracking_file }}.</p>
+            {% if import_summary.preview_applied %}
+            <p>Preview mode was on, so this run only scored the first {{ import_summary.processed_count }} players out of {{ import_summary.total_candidate_rows }} parsed rows.</p>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        {% if import_highlights %}
+        <section class="panel">
+            <h2>Top Edges From This Import</h2>
+            <div class="highlight-grid">
+                {% for row in import_highlights %}
+                <article class="highlight-card">
+                    <strong>{{ row.player_name }} | {{ row.market }}</strong>
+                    <div class="highlight-meta">
+                        {{ row.sportsbook }}
+                        {% if row.pick_side_label %}| {{ row.pick_side_label }}{% endif %}
+                        {% if row.payout_multiplier_label %}| {{ row.payout_multiplier_label }}{% endif %}
+                        | Line {{ row.line }} | Model {{ row.prediction }}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <span class="edge-pill {{ row.edge_class }}">{{ row.edge_label }}</span>
+                        <span class="signal-pill {{ row.signal_class }}">{{ row.signal_label }}</span>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if imported_rows %}
+        <div class="results-grid">
+            {% for row in imported_rows %}
+            <article class="result-card">
+                <h3>{{ row.player_name }}</h3>
+                <div class="result-meta">{{ row.sportsbook }} | {{ row.opponent_abbr }} | {{ row.game_date }}</div>
+                {% if row.best_card %}
+                <div class="best-card-banner">
+                    <strong>{{ row.best_card.market }}</strong>
+                    <div class="highlight-meta">
+                        {% if row.best_card.pick_side_label %}{{ row.best_card.pick_side_label }} | {% endif %}
+                        {% if row.best_card.payout_multiplier_label %}{{ row.best_card.payout_multiplier_label }} | {% endif %}
+                        Line {{ row.best_card.line }} | Model {{ row.best_card.prediction }} | {{ row.best_card.edge_label }}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <span class="signal-pill {{ row.best_card.signal_class }}">{{ row.best_card.signal_label }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                <table class="market-table">
+                    <thead>
+                        <tr>
+                            <th>Market</th>
+                            <th>Pick</th>
+                            <th>Payout</th>
+                            <th>Line</th>
+                            <th>Model</th>
+                            <th>Edge</th>
+                            <th>Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for card in row.market_cards %}
+                        <tr>
+                            <td>{{ card.market }}</td>
+                            <td>{{ card.pick_side_label if card.pick_side_label else 'Line' }}</td>
+                            <td>{{ card.payout_multiplier_label if card.payout_multiplier_label else 'N/A' }}</td>
+                            <td>{{ card.line }}</td>
+                            <td>{{ card.prediction }}</td>
+                            <td><span class="edge-pill {{ card.edge_class }}">{{ card.edge_label }}</span></td>
+                            <td><span class="signal-pill {{ card.signal_class }}">{{ card.signal_label }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        (() => {
+            const form = document.getElementById("import-lines-form");
+            const submitButton = document.getElementById("import-lines-submit");
+            const overlay = document.getElementById("import-progress-overlay");
+            const progressBar = document.getElementById("import-progress-bar");
+            const progressPercent = document.getElementById("import-progress-percent");
+            const progressStage = document.getElementById("import-progress-stage");
+
+            if (!form || !submitButton || !overlay || !progressBar || !progressPercent || !progressStage) {
+                return;
+            }
+
+            const stages = [
+                { percent: 12, label: "Preparing your player card..." },
+                { percent: 24, label: "Parsing rows and normalizing markets..." },
+                { percent: 41, label: "Matching uploaded names to NBA players..." },
+                { percent: 58, label: "Generating model predictions..." },
+                { percent: 74, label: "Calculating edges and bet signals..." },
+                { percent: 88, label: "Writing tracking rows and building results..." },
+                { percent: 94, label: "Wrapping up your import..." },
+            ];
+
+            let timerId = null;
+
+            const setStage = (stage) => {
+                progressBar.style.width = `${stage.percent}%`;
+                progressPercent.textContent = `${stage.percent}%`;
+                progressStage.textContent = stage.label;
+            };
+
+            form.addEventListener("submit", () => {
+                overlay.classList.add("visible");
+                overlay.setAttribute("aria-hidden", "false");
+                submitButton.disabled = true;
+                submitButton.textContent = "Import Running...";
+
+                let stageIndex = 0;
+                setStage(stages[stageIndex]);
+
+                timerId = window.setInterval(() => {
+                    if (stageIndex >= stages.length - 1) {
+                        window.clearInterval(timerId);
+                        return;
+                    }
+                    stageIndex += 1;
+                    setStage(stages[stageIndex]);
+                }, 1400);
+            });
+        })();
+    </script>
+</body>
+</html>

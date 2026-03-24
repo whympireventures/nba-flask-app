@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Backtest — Whympire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255,252,248,0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23,23,23,0.08);
+            --accent: #d96f32;
+            --green: #1a7a4a;
+            --green-bg: #eaf7f0;
+            --red: #9c3e22;
+            --red-bg: #fdf0ec;
+            --yellow: #7a6200;
+            --yellow-bg: #fdf8e7;
+        }
+        body { min-height:100vh; margin:0; font-family:"Barlow",sans-serif; color:var(--ink);
+            background: radial-gradient(circle at top right,rgba(22,49,74,.16),transparent 28%),
+                        radial-gradient(circle at bottom left,rgba(217,111,50,.18),transparent 25%),
+                        linear-gradient(160deg,#f8f3eb 0%,#f1ece4 48%,#ebe7df 100%); }
+        .page-shell { max-width:1380px; margin:0 auto; padding:28px 16px 60px; }
+        .panel,.hero-card { background:var(--panel); border:1px solid var(--line); border-radius:28px; box-shadow:0 16px 48px rgba(0,0,0,.08); padding:24px; margin-bottom:18px; }
+        .hero-card h1,.panel h2 { margin:0; font-family:"Space Grotesk",sans-serif; letter-spacing:-.04em; }
+        .hero-card p,.panel p { margin:8px 0 0; color:var(--muted); }
+        .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+        .btn-pill { border-radius:999px; padding:10px 18px; font-weight:700; }
+        .pill { display:inline-flex; align-items:center; gap:10px; margin-top:14px; margin-right:10px; padding:10px 14px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.9); font-weight:700; }
+        .pill small { color:var(--muted); font-weight:600; }
+
+        /* Stats bar */
+        .stats-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:18px; }
+        .stat-chip { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px; text-align:center; }
+        .stat-chip .val { font-size:1.8rem; font-weight:700; color:var(--accent); font-family:"Space Grotesk",sans-serif; }
+        .stat-chip .lbl { font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-top:2px; }
+
+        /* Market grid */
+        .market-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+        .market-card { border-radius:18px; background:#fff; border:1px solid var(--line); padding:16px 18px; }
+        .market-card .mkt-name { font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:6px; }
+        .market-card .mkt-mae { font-size:2rem; font-weight:700; color:var(--accent); }
+        .market-card .mkt-hit { font-size:1rem; font-weight:700; margin-top:4px; }
+        .market-card .mkt-hit.strong { color:var(--green); }
+        .market-card .mkt-hit.ok { color:var(--yellow); }
+        .market-card .mkt-hit.weak { color:var(--red); }
+        .hit-bar-bg { height:6px; border-radius:99px; background:rgba(0,0,0,.08); margin-top:8px; }
+        .hit-bar-fill { height:100%; border-radius:99px; background:var(--accent); }
+
+        /* Date nav */
+        .date-nav { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+        .date-chip { padding:6px 14px; border-radius:999px; border:1px solid var(--line); background:#fff; font-size:.85rem; font-weight:600; cursor:pointer; text-decoration:none; color:var(--ink); }
+        .date-chip:hover,.date-chip.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        /* Market filter tabs */
+        .filter-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+        .ftab { padding:6px 16px; border-radius:999px; border:1px solid var(--line); background:#fff; font-size:.82rem; font-weight:700; cursor:pointer; }
+        .ftab.active,.ftab:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        /* Table */
+        table { width:100%; border-collapse:collapse; font-size:.88rem; }
+        th { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; padding:10px 12px; border-bottom:2px solid var(--line); cursor:pointer; white-space:nowrap; user-select:none; }
+        th:hover { color:var(--accent); }
+        th .sort-arrow { margin-left:4px; opacity:.4; }
+        td { padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+        tr:hover td { background:rgba(217,111,50,.04); }
+        .table-wrap { overflow-x:auto; }
+
+        /* Error cells */
+        .err-hit { color:var(--green); font-weight:700; }
+        .err-miss { color:var(--red); font-weight:700; }
+        .err-close { color:var(--yellow); font-weight:600; }
+        .row-hit td:first-child { border-left:3px solid var(--green); }
+        .row-miss td:first-child { border-left:3px solid var(--red); }
+
+        /* Best/worst picks */
+        .picks-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        @media(max-width:700px){ .picks-grid { grid-template-columns:1fr; } }
+        .pick-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+        .pick-row:last-child { border-bottom:none; }
+        .pick-player { font-weight:700; }
+        .pick-meta { font-size:.82rem; color:var(--muted); }
+        .pick-badge { font-size:.85rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+        .badge-hit { background:var(--green-bg); color:var(--green); }
+        .badge-miss { background:var(--red-bg); color:var(--red); }
+
+        .error-note { color:var(--red); margin-top:10px; }
+        .form-row-grid { display:grid; grid-template-columns:minmax(200px,280px) auto auto; gap:12px; align-items:end; }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="toolbar">
+        <a href="/" class="btn btn-secondary btn-pill">Back to Home</a>
+        <span style="color:var(--muted);font-size:.85rem;">Historical Backtest</span>
+    </div>
+
+    <section class="hero-card">
+        <h1>Historical Backtest</h1>
+        <p>Run the model against a past NBA slate using only prior games, then compare predictions to actual results.</p>
+        <div class="pill">Dataset <small>{{ backtest_overview.min_date or "N/A" }} — {{ backtest_overview.max_date or "N/A" }}</small></div>
+        {% if backtest_result and backtest_result.available %}
+        <div class="pill">Date <small>{{ backtest_result.target_date }}</small></div>
+        <div class="pill">Games <small>{{ backtest_result.game_count }}</small></div>
+        <div class="pill">Players <small>{{ backtest_result.player_count }}</small></div>
+        {% endif %}
+    </section>
+
+    <!-- Date picker + quick nav -->
+    <section class="panel">
+        <h2>Select Date</h2>
+        {% if backtest_overview.available_dates %}
+        <div class="date-nav" style="margin-top:12px;">
+            {% for d in backtest_overview.available_dates %}
+            <a href="#" class="date-chip {% if d == target_date %}active{% endif %}" onclick="document.getElementById('target_date').value='{{ d }}';document.getElementById('bt-form').submit();return false;">{{ d }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form id="bt-form" action="/historical-backtest" method="POST">
+            <div class="form-row-grid">
+                <input type="date" id="target_date" name="target_date" class="form-control" value="{{ target_date }}"
+                    min="{{ backtest_overview.min_date }}" max="{{ backtest_overview.max_date }}">
+                <button type="submit" class="btn btn-primary btn-pill">Run Backtest</button>
+            </div>
+        </form>
+        {% if backtest_error %}
+        <p class="error-note">{{ backtest_error }}</p>
+        {% elif backtest_result and not backtest_result.available %}
+        <p class="error-note">No data for {{ backtest_result.target_date }}. Latest available: {{ backtest_result.max_date }}.</p>
+        {% endif %}
+    </section>
+
+    {% if backtest_result and backtest_result.available %}
+
+    <!-- Overall stats bar -->
+    {% set total_players = backtest_result.player_rows | length %}
+    {% set pts_hits = backtest_result.player_rows | selectattr("points_hit") | list | length %}
+    {% set ast_hits = backtest_result.player_rows | selectattr("assists_hit") | list | length %}
+    {% set reb_hits = backtest_result.player_rows | selectattr("rebounds_hit") | list | length %}
+    {% set pra_hits = backtest_result.player_rows | selectattr("pra_hit") | list | length %}
+    <div class="stats-bar">
+        <div class="stat-chip">
+            <div class="val">{{ total_players }}</div>
+            <div class="lbl">Players</div>
+        </div>
+        <div class="stat-chip">
+            <div class="val">{{ ((pts_hits / total_players * 100) | round(0) | int) if total_players else 0 }}%</div>
+            <div class="lbl">Points Accuracy</div>
+        </div>
+        <div class="stat-chip">
+            <div class="val">{{ ((ast_hits / total_players * 100) | round(0) | int) if total_players else 0 }}%</div>
+            <div class="lbl">Assists Accuracy</div>
+        </div>
+        <div class="stat-chip">
+            <div class="val">{{ ((reb_hits / total_players * 100) | round(0) | int) if total_players else 0 }}%</div>
+            <div class="lbl">Rebounds Accuracy</div>
+        </div>
+        <div class="stat-chip">
+            <div class="val">{{ ((pra_hits / total_players * 100) | round(0) | int) if total_players else 0 }}%</div>
+            <div class="lbl">PRA Accuracy</div>
+        </div>
+    </div>
+
+    <!-- Market Summary -->
+    <section class="panel">
+        <h2>Market Summary</h2>
+        <p>Mean absolute error and hit rate (within tolerance) per market.</p>
+        <div class="market-grid" style="margin-top:14px;">
+            {% for row in backtest_result.summary_rows %}
+            {% set hit_pct = (row.hit_count / row.total * 100) | round(1) if row.total else 0 %}
+            {% set hit_class = "strong" if hit_pct >= 60 else ("ok" if hit_pct >= 50 else "weak") %}
+            <div class="market-card">
+                <div class="mkt-name">{{ row.market }}</div>
+                <div class="mkt-mae">{{ row.mae }}</div>
+                <div class="mkt-hit {{ hit_class }}">{{ hit_pct }}% hit rate</div>
+                <div class="hit-bar-bg"><div class="hit-bar-fill" style="width:{{ [hit_pct,100]|min }}%;"></div></div>
+                <small style="color:var(--muted);">{{ row.hit_count }}/{{ row.total }} within ±{{ row.tolerance }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Best & Worst Picks -->
+    {% if backtest_result.best_picks or backtest_result.worst_picks %}
+    <section class="panel">
+        <h2>Best & Worst Predictions</h2>
+        <p>Ranked by points projection error.</p>
+        <div class="picks-grid" style="margin-top:16px;">
+            <div>
+                <h3 style="font-size:1rem;color:var(--green);margin-bottom:10px;">Most Accurate</h3>
+                {% for r in backtest_result.best_picks %}
+                <div class="pick-row">
+                    <div>
+                        <div class="pick-player">{{ r.player_name }}</div>
+                        <div class="pick-meta">{{ r.team_abbr }} vs {{ r.opponent_abbr }} &middot; Pred {{ r.points_pred }} / Actual {{ r.points_actual }}</div>
+                    </div>
+                    <span class="pick-badge badge-hit">{{ "+" if r.points_error > 0 else "" }}{{ r.points_error }} pts</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div>
+                <h3 style="font-size:1rem;color:var(--red);margin-bottom:10px;">Biggest Misses</h3>
+                {% for r in backtest_result.worst_picks %}
+                <div class="pick-row">
+                    <div>
+                        <div class="pick-player">{{ r.player_name }}</div>
+                        <div class="pick-meta">{{ r.team_abbr }} vs {{ r.opponent_abbr }} &middot; Pred {{ r.points_pred }} / Actual {{ r.points_actual }}</div>
+                    </div>
+                    <span class="pick-badge badge-miss">{{ "+" if r.points_error > 0 else "" }}{{ r.points_error }} pts</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Player Results Table -->
+    <section class="panel">
+        <h2>Player Results</h2>
+        <p>Green border = points within tolerance. Click column headers to sort.</p>
+
+        <div class="filter-tabs" style="margin-top:14px;" id="filter-tabs">
+            <span class="ftab active" data-filter="all">All</span>
+            <span class="ftab" data-filter="hit">Hits Only</span>
+            <span class="ftab" data-filter="miss">Misses Only</span>
+        </div>
+
+        <div class="table-wrap">
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Player <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(1)">Team <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(2)">Opp <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(3)">PTS Pred <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(4)">PTS Act <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(5)">PTS Err <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(6)">AST Pred <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(7)">AST Act <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(8)">AST Err <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(9)">REB Pred <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(10)">REB Act <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(11)">REB Err <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(12)">PRA Pred <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(13)">PRA Act <span class="sort-arrow">↕</span></th>
+                        <th onclick="sortTable(14)">PRA Err <span class="sort-arrow">↕</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in backtest_result.player_rows %}
+                    {% set all_hit = row.points_hit and row.assists_hit and row.rebounds_hit %}
+                    <tr class="{{ 'row-hit' if row.points_hit else 'row-miss' }}" data-hit="{{ 'hit' if row.points_hit else 'miss' }}">
+                        <td><strong>{{ row.player_name }}</strong></td>
+                        <td>{{ row.team_abbr }}</td>
+                        <td>{{ row.opponent_abbr }}</td>
+                        <td>{{ row.points_pred }}</td>
+                        <td>{{ row.points_actual }}</td>
+                        <td class="{{ 'err-hit' if row.points_hit else 'err-miss' }}">{{ "+" if row.points_error > 0 else "" }}{{ row.points_error }}</td>
+                        <td>{{ row.assists_pred }}</td>
+                        <td>{{ row.assists_actual }}</td>
+                        <td class="{{ 'err-hit' if row.assists_hit else 'err-miss' }}">{{ "+" if row.assists_error > 0 else "" }}{{ row.assists_error }}</td>
+                        <td>{{ row.rebounds_pred }}</td>
+                        <td>{{ row.rebounds_actual }}</td>
+                        <td class="{{ 'err-hit' if row.rebounds_hit else 'err-miss' }}">{{ "+" if row.rebounds_error > 0 else "" }}{{ row.rebounds_error }}</td>
+                        <td>{{ row.pra_pred }}</td>
+                        <td>{{ row.pra_actual }}</td>
+                        <td class="{{ 'err-hit' if row.pra_hit else 'err-miss' }}">{{ "+" if row.pra_error > 0 else "" }}{{ row.pra_error }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {% endif %}
+</div>
+
+<script>
+// Sort table
+let sortDir = {};
+function sortTable(col) {
+    const table = document.getElementById("results-table");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    const asc = !sortDir[col];
+    sortDir = {};
+    sortDir[col] = asc;
+    rows.sort((a, b) => {
+        const va = a.cells[col].textContent.trim();
+        const vb = b.cells[col].textContent.trim();
+        const na = parseFloat(va), nb = parseFloat(vb);
+        if (!isNaN(na) && !isNaN(nb)) return asc ? na - nb : nb - na;
+        return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+}
+
+// Filter tabs
+document.querySelectorAll(".ftab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".ftab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const f = tab.dataset.filter;
+        document.querySelectorAll("#results-table tbody tr").forEach(row => {
+            if (f === "all") row.style.display = "";
+            else if (f === "hit") row.style.display = row.dataset.hit === "hit" ? "" : "none";
+            else row.style.display = row.dataset.hit === "miss" ? "" : "none";
+        });
+    });
+});
+</script>
+</body>
+</html>

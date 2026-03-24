@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --accent-dark: #ae531f;
+            --navy: #16314a;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+
+        .page-shell {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 28px 16px 48px;
+        }
+
+        .topbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 4vw, 3.6rem);
+            letter-spacing: -0.04em;
+        }
+
+        .title-block p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .topbar .btn {
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+
+        .search-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid var(--line);
+            font-weight: 600;
+        }
+
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: rgba(22, 49, 74, 0.08);
+            border: 1px solid var(--line);
+            font-weight: 700;
+        }
+
+        .mode-badge small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px;
+        }
+
+        .player-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            padding: 22px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+        }
+
+        .player-card h2 {
+            margin: 0 0 14px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.6rem;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .meta-card {
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+            padding: 12px 14px;
+        }
+
+        .meta-label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 4px;
+        }
+
+        .predictor-box {
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(22, 49, 74, 0.98), rgba(19, 41, 61, 0.94));
+            color: #fff;
+            padding: 18px;
+        }
+
+        .predictor-box h3 {
+            margin: 0 0 8px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.25rem;
+        }
+
+        .predictor-box p {
+            color: rgba(255, 255, 255, 0.72);
+            margin-bottom: 16px;
+        }
+
+        .predictor-box .form-control,
+        .predictor-box .custom-select {
+            height: 50px;
+            border: 0;
+            border-radius: 14px;
+        }
+
+        .predictor-box .form-control.form-control-sm {
+            height: 44px;
+        }
+
+        .predictor-box .btn {
+            height: 50px;
+            border: 0;
+            border-radius: 14px;
+            background: var(--accent);
+            font-weight: 700;
+        }
+
+        .predictor-box .btn:hover {
+            background: var(--accent-dark);
+        }
+
+        .predictor-footnote {
+            margin-top: 12px;
+            color: rgba(255, 255, 255, 0.66);
+            font-size: 0.92rem;
+        }
+
+        .custom-check {
+            margin: 4px 0 16px;
+        }
+
+        .custom-check label {
+            color: rgba(255, 255, 255, 0.88);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            padding: 42px 26px;
+            text-align: center;
+            background: var(--panel);
+            border-radius: 24px;
+            border: 1px solid var(--line);
+        }
+
+        @media (max-width: 767px) {
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="topbar">
+            <div class="title-block">
+                <div class="search-badge">Search: {{ search_query if search_query else 'Player lookup' }}</div>
+                <div class="mode-badge">{{ data_mode.label }} <small>{{ data_mode.detail }}</small></div>
+                <h1>Whympire NBA Sports Predictor</h1>
+                <p>Let&apos;s win some money by tightening the player, opponent, and game-date inputs before the prediction runs.</p>
+            </div>
+            <a href="/" class="btn btn-secondary">Back to Search</a>
+        </div>
+
+        {% if players %}
+            <div class="player-grid">
+                {% for player in players %}
+                    <section class="player-card">
+                        <h2>{{ player.firstname }} {{ player.lastname }}</h2>
+                        <div class="meta-grid">
+                            <div class="meta-card">
+                                <span class="meta-label">Birth Date</span>
+                                <strong>{{ player.birth.date if player.birth.date else 'N/A' }}</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">Country</span>
+                                <strong>{{ player.birth.country if player.birth.country else 'N/A' }}</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">NBA Start</span>
+                                <strong>{{ player.nba.start if player.nba.start else 'N/A' }}</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">Pro Years</span>
+                                <strong>{{ player.nba.pro if player.nba.pro else 'N/A' }}</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">Height</span>
+                                <strong>{{ player.height.feets }}'{{ player.height.inches }}''</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">Weight</span>
+                                <strong>{{ player.weight.pounds }} lbs</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">College</span>
+                                <strong>{{ player.college if player.college else 'N/A' }}</strong>
+                            </div>
+                            <div class="meta-card">
+                                <span class="meta-label">Role</span>
+                                <strong>
+                                    {% if player.leagues and player.leagues.standard %}
+                                        {{ player.leagues.standard.pos if player.leagues.standard.pos else 'N/A' }} | #{{ player.leagues.standard.jersey if player.leagues.standard.jersey else 'N/A' }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="predictor-box">
+                            <h3>Prediction Input</h3>
+                            <p>Set the matchup cleanly, add optional sportsbook lines, and log the model-vs-line edge to your tracking CSV.</p>
+                            <form action="/predict/{{ player.id }}" method="POST">
+                                <div class="form-row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="opponent-{{ player.id }}">Opponent</label>
+                                        <select id="opponent-{{ player.id }}" name="opponent_abbr" class="custom-select">
+                                            <option value="">Select opponent</option>
+                                            {% for team in team_options %}
+                                                <option value="{{ team }}">{{ team }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date-{{ player.id }}">Game Date</label>
+                                        <input id="date-{{ player.id }}" type="date" name="game_date" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="sportsbook-{{ player.id }}">Sportsbook</label>
+                                        <input id="sportsbook-{{ player.id }}" type="text" name="sportsbook" class="form-control" placeholder="Example: Underdog">
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-checkbox custom-check">
+                                    <input id="underdog-{{ player.id }}" type="checkbox" name="autofill_underdog" value="1" class="custom-control-input">
+                                    <label class="custom-control-label" for="underdog-{{ player.id }}">Auto-fill available Underdog lines</label>
+                                </div>
+                                {% if underdog_status.message %}
+                                <div class="predictor-footnote" style="margin-top: 8px;">
+                                    {{ underdog_status.message }} {{ underdog_status.hint }}
+                                </div>
+                                {% endif %}
+                                <div class="form-row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-points-{{ player.id }}">Points Line</label>
+                                        <input id="line-points-{{ player.id }}" type="number" step="0.5" name="line_points" class="form-control form-control-sm" placeholder="27.5">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-assists-{{ player.id }}">Assists Line</label>
+                                        <input id="line-assists-{{ player.id }}" type="number" step="0.5" name="line_assists" class="form-control form-control-sm" placeholder="6.5">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-rebounds-{{ player.id }}">Rebounds Line</label>
+                                        <input id="line-rebounds-{{ player.id }}" type="number" step="0.5" name="line_rebounds" class="form-control form-control-sm" placeholder="5.5">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-pr-{{ player.id }}">Points + Rebounds</label>
+                                        <input id="line-pr-{{ player.id }}" type="number" step="0.5" name="line_points_rebounds" class="form-control form-control-sm" placeholder="33.5">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-pa-{{ player.id }}">Points + Assists</label>
+                                        <input id="line-pa-{{ player.id }}" type="number" step="0.5" name="line_points_assists" class="form-control form-control-sm" placeholder="34.5">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-ar-{{ player.id }}">Assists + Rebounds</label>
+                                        <input id="line-ar-{{ player.id }}" type="number" step="0.5" name="line_assists_rebounds" class="form-control form-control-sm" placeholder="11.5">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="line-pra-{{ player.id }}">PRA</label>
+                                        <input id="line-pra-{{ player.id }}" type="number" step="0.5" name="line_points_rebounds_assists" class="form-control form-control-sm" placeholder="39.5">
+                                    </div>
+                                </div>
+                                <button class="btn btn-block" type="submit">Generate Prediction</button>
+                            </form>
+                            <div class="predictor-footnote">
+                                {% if data_mode.label == 'RapidAPI Mode' %}
+                                    Paid mode is active. This form uses your live API-backed search and prediction flow, and manual lines always override any provider autofill.
+                                {% else %}
+                                    Free mode is active. This is great for testing before you decide whether a paid live data plan is worth it, and manual lines always override any provider autofill.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h2>No players found.</h2>
+                <p>Try a different last name or go back and search with a full player name.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5efe6;
+            --panel: rgba(255, 252, 248, 0.95);
+            --ink: #171717;
+            --muted: #5f5d59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --navy: #16314a;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(22, 49, 74, 0.14), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(217, 111, 50, 0.16), transparent 28%),
+                linear-gradient(160deg, #faf4ec 0%, #f1ece4 48%, #ece7df 100%);
+        }
+
+        .page-shell {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 28px 16px 48px;
+        }
+
+        .hero-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            padding: 26px;
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .hero-card h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            letter-spacing: -0.04em;
+        }
+
+        .hero-card p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 1.04rem;
+        }
+
+        .mode-pill,
+        .game-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            margin-right: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+        }
+
+        .mode-pill small,
+        .game-pill small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .topbar .btn {
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+
+        .summary-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .summary-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--line);
+            font-weight: 700;
+        }
+
+        .summary-chip small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .compare-shell {
+            margin-bottom: 18px;
+            padding: 20px;
+            border-radius: 24px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.06);
+        }
+
+        .compare-shell h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.6rem;
+        }
+
+        .compare-shell p {
+            margin: 8px 0 14px;
+            color: var(--muted);
+        }
+
+        .market-tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .market-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.92);
+            font-weight: 700;
+        }
+
+        .market-tag small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .compare-wrap {
+            overflow-x: auto;
+        }
+
+        .compare-table {
+            width: 100%;
+            min-width: 1120px;
+            border-collapse: collapse;
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+
+        .compare-table th {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            background: rgba(22, 49, 74, 0.05);
+        }
+
+        .compare-player {
+            min-width: 220px;
+        }
+
+        .compare-player strong {
+            display: block;
+            font-size: 1rem;
+        }
+
+        .compare-player span {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .compare-cell strong {
+            display: block;
+            font-size: 1rem;
+        }
+
+        .compare-cell span {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .compare-cell em {
+            font-style: normal;
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .slate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 18px;
+        }
+
+        .player-card {
+            background: linear-gradient(180deg, rgba(22, 49, 74, 0.98), rgba(19, 41, 61, 0.94));
+            color: #fff;
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .player-card h2 {
+            margin: 0 0 4px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.35rem;
+        }
+
+        .role-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .player-meta {
+            margin: 0 0 14px;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.95rem;
+        }
+
+        .best-edge-banner {
+            margin-bottom: 12px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .best-edge-banner strong {
+            display: block;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .best-edge-banner span {
+            display: block;
+            margin-top: 4px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .combo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-box span {
+            display: block;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.68);
+        }
+
+        .stat-box strong {
+            display: block;
+            font-size: 1.65rem;
+            margin-top: 4px;
+        }
+
+        .context-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .context-chip {
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            font-size: 0.88rem;
+        }
+
+        .edge-panel {
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .line-form-panel {
+            margin-top: 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .line-form-panel summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 14px;
+        }
+
+        .line-form-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .line-form-panel summary h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .line-form-panel-body {
+            padding: 0 14px 14px;
+        }
+
+        .line-input-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .line-input-grid input {
+            height: 40px;
+            border: 0;
+            border-radius: 12px;
+            padding: 0 12px;
+            font-size: 0.9rem;
+        }
+
+        .line-input-grid label {
+            margin: 0;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .edge-panel h3 {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .edge-row {
+            display: grid;
+            grid-template-columns: 1.2fr 0.9fr 0.8fr;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .edge-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .edge-signal {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .signal-best { background: rgba(93, 214, 123, 0.18); color: #b8ffd1; }
+        .signal-lean { background: rgba(255, 196, 92, 0.18); color: #ffd28d; }
+        .signal-pass { background: rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.72); }
+
+        .footnote {
+            margin-top: 18px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--line);
+            color: var(--muted);
+        }
+
+        .slate-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding: 16px 18px;
+            border-radius: 22px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 14px;
+            z-index: 2;
+        }
+
+        .slate-actions .btn {
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+
+        .slate-actions-copy {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 991px) {
+            .line-input-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767px) {
+            .slate-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .line-input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .edge-row {
+                grid-template-columns: 1fr;
+            }
+
+            .slate-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .card-top {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="topbar">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        <section class="hero-card">
+            <h1>Matchup Slate — {{ matchup.away_team }} at {{ matchup.home_team }}</h1>
+            <p>All active rotation players (≥10 projected minutes) from both teams, ranked by projected output and matched against the Underdog prop board.</p>
+            <div class="mode-pill">{{ data_mode.label }} <small>{{ data_mode.detail }}</small></div>
+            <div class="game-pill">{{ matchup.away_team }} at {{ matchup.home_team }} <small>{{ matchup.game_date if matchup.game_date else ‘Date not provided’ }}</small></div>
+            <div class="summary-row">
+                <div class="summary-chip">Slate Size <small>{{ slate|length }} players</small></div>
+                <div class="summary-chip">Away <small>{{ matchup.away_team }}</small></div>
+                <div class="summary-chip">Home <small>{{ matchup.home_team }}</small></div>
+                <div class="summary-chip">Underdog Props Matched <small>{{ slate_summary.total_props_matched }}</small></div>
+            </div>
+        </section>
+
+        <section class="compare-shell">
+            <h2>Underdog Quick Compare</h2>
+            <p>Scan the full slate and compare each player’s model projection to the current Underdog line by market.</p>
+            <div class="market-tag-row">
+                {% for market in tracked_markets %}
+                <div class="market-tag">{{ market }} <small>{{ slate_summary.market_counts[market] }} matched</small></div>
+                {% endfor %}
+            </div>
+            <div class="compare-wrap">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            {% for market in tracked_markets %}
+                            <th>{{ market }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in slate %}
+                        <tr>
+                            <td class="compare-player">
+                                <strong>{{ player.name }}</strong>
+                                <span>{{ player.team_abbr }} vs {{ player.opponent_abbr }} | {{ player.role_label }}</span>
+                                {% if player.injury_status %}
+                                <span style="display:inline-block;margin-top:3px;font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:999px;
+                                    background:{% if player.injury_status.is_out %}rgba(239,68,68,0.15){% else %}rgba(251,191,36,0.15){% endif %};
+                                    color:{% if player.injury_status.is_out %}#dc2626{% else %}#b45309{% endif %};">
+                                    {{ player.injury_status.status }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            {% for market in tracked_markets %}
+                            {% set card = player.market_card_lookup.get(market) %}
+                            <td class="compare-cell">
+                                {% if card %}
+                                <strong>{{ card.prediction }}</strong>
+                                <span>Line {{ card.line }}</span>
+                                <span><em>{{ card.edge_label }}</em></span>
+                                {% else %}
+                                <span>No line</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <form action="/matchup-predict" method="POST">
+            <input type="hidden" name="away_team" value="{{ matchup.away_team }}">
+            <input type="hidden" name="home_team" value="{{ matchup.home_team }}">
+            <input type="hidden" name="game_date" value="{{ matchup.game_date }}">
+            <div class="slate-actions">
+                <div class="slate-actions-copy">Enter any manual overrides you want, then recalculate the slate to refresh the Underdog comparison and player cards.</div>
+                <button type="submit" class="btn btn-primary">Apply Betting Lines</button>
+            </div>
+        <div class="slate-grid">
+            {% for player in slate %}
+                <article class="player-card">
+                    <div class="card-top">
+                        <div>
+                            <h2>{{ player.name }}</h2>
+                            <div class="player-meta">
+                        {{ player.side }} side | {{ player.team_abbr }} vs {{ player.opponent_abbr }}
+                        {% if player.injury_status %}
+                        <span style="margin-left:8px; padding:3px 10px; border-radius:999px; font-size:0.78rem; font-weight:700;
+                            background:{% if player.injury_status.is_out %}rgba(239,68,68,0.25){% else %}rgba(251,191,36,0.25){% endif %};
+                            color:{% if player.injury_status.is_out %}#fca5a5{% else %}#fde68a{% endif %};">
+                            {{ player.injury_status.status }}{% if player.injury_status.description %} — {{ player.injury_status.description[:60] }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                        </div>
+                        <div class="role-pill">{{ player.role_label }}</div>
+                    </div>
+                    {% if player.best_edge_card %}
+                    <div class="best-edge-banner">
+                        <strong>Best Underdog Edge</strong>
+                        <span>{{ player.best_edge_card.market }} | {{ player.best_edge_card.edge_label }} | {{ player.best_edge_card.signal_label }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <span>Points</span>
+                            <strong>{{ player.predicted_points }}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>Assists</span>
+                            <strong>{{ player.predicted_assists }}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>Rebounds</span>
+                            <strong>{{ player.predicted_rebounds }}</strong>
+                        </div>
+                    </div>
+                    <div class="combo-grid">
+                        <div class="stat-box">
+                            <span>P + R</span>
+                            <strong>{{ player.predicted_points_rebounds }}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>P + A</span>
+                            <strong>{{ player.predicted_points_assists }}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>A + R</span>
+                            <strong>{{ player.predicted_assists_rebounds }}</strong>
+                        </div>
+                    </div>
+                    <div class="context-row">
+                        <div class="context-chip">Model Min: {{ player.projected_minutes }}</div>
+                        <div class="context-chip">Baseline Min: {{ player.baseline_projected_minutes }}</div>
+                        <div class="context-chip">Season MPG: {{ player.minutes }}</div>
+                        <div class="context-chip">Last 10 MPG: {{ player.recent_minutes }}</div>
+                        <div class="context-chip">Trend: {{ "%+.1f"|format(player.minutes_trend) }}</div>
+                        <div class="context-chip">GP: {{ player.games_played }}</div>
+                        <div class="context-chip">USG: {{ player.usage_rate }}%</div>
+                        <div class="context-chip">Last 10 USG: {{ player.recent_usage_rate }}%</div>
+                    </div>
+                    <div class="edge-panel">
+                        <h3>
+                            Underdog Prop Compare
+                            {% if player.line_source %}
+                                <span style="font-weight:600; color: rgba(255,255,255,0.58); text-transform:none;">from {{ player.line_source }}</span>
+                            {% endif %}
+                        </h3>
+                        {% if player.market_cards %}
+                            {% for card in player.market_cards %}
+                            <div class="edge-row">
+                                <div>
+                                    {{ card.market }} | Line {{ card.line }} | Model {{ card.prediction }}
+                                    {% if card.model_confidence_score is not none %}
+                                        <div style="font-size: 0.78rem; color: rgba(255,255,255,0.62); margin-top: 4px;">
+                                            {{ card.model_confidence_label }} confidence ({{ card.model_confidence_score }}%) | +/-{{ card.model_error_band }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div>{{ card.edge_label }}</div>
+                                <div><span class="edge-signal {{ card.signal_class }}">{{ card.signal_label }}</span></div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div style="color: rgba(255,255,255,0.62); font-size: 0.9rem;">No matching board lines were available for this player.</div>
+                        {% endif %}
+                    </div>
+                    <details class="line-form-panel">
+                        <summary><h3>Manual Betting Lines</h3></summary>
+                        <div class="line-form-panel-body">
+                            <div class="line-input-grid">
+                                <div>
+                                    <label>Points</label>
+                                    <input type="number" step="0.5" name="{{ player.player_id }}_line_points" value="{{ '' if player.manual_line_inputs.line_points is none else player.manual_line_inputs.line_points }}">
+                                </div>
+                                <div>
+                                    <label>Assists</label>
+                                    <input type="number" step="0.5" name="{{ player.player_id }}_line_assists" value="{{ '' if player.manual_line_inputs.line_assists is none else player.manual_line_inputs.line_assists }}">
+                                </div>
+                                <div>
+                                    <label>Rebounds</label>
+                                    <input type="number" step="0.5" name="{{ player.player_id }}_line_rebounds" value="{{ '' if player.manual_line_inputs.line_rebounds is none else player.manual_line_inputs.line_rebounds }}">
+                                </div>
+                                <div>
+                                    <label>P + R</label>
+                                    <input type="number" step="0.5" name="{{ player.player_id }}_line_points_rebounds" value="{{ '' if player.manual_line_inputs.line_points_rebounds is none else player.manual_line_inputs.line_points_rebounds }}">
+                                </div>
+                                <div>
+                                    <label>P + A</label>
+                                    <input type="number" step="0.5" name="{{ player.player_id }}_line_points_assists" value="{{ '' if player.manual_line_inputs.line_points_assists is none else player.manual_line_inputs.line_points_assists }}">
+                                </div>
+                                <div>
+                                    <label>A + R</label>
+                                    <input type="number" step="0.5" name="{{ player.player_id }}_line_assists_rebounds" value="{{ '' if player.manual_line_inputs.line_assists_rebounds is none else player.manual_line_inputs.line_assists_rebounds }}">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </article>
+            {% endfor %}
+        </div>
+            <div class="slate-actions" style="margin-top: 18px;">
+                <button type="submit" class="btn btn-primary">Recalculate Slate Results</button>
+            </div>
+        </form>
+
+        <div class="footnote">
+            Slate selection is based on projected opportunity using recent and season minutes, not confirmed injury or starting-lineup news. Comparisons only appear when Whympire can match a current Underdog line to that player and matchup.
+        </div>
+    </div>
+</body>
+</html>

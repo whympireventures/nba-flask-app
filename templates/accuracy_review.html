@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --navy: #16314a;
+            --hit: rgba(34, 197, 94, 0.08);
+            --miss: rgba(239, 68, 68, 0.07);
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+
+        .page-shell {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 16px 48px;
+        }
+
+        .panel, .hero-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+
+        .hero-card h1, .panel h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-card p, .panel p { margin: 8px 0 0; color: var(--muted); }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .toolbar .btn { border-radius: 999px; padding: 12px 18px; font-weight: 700; }
+
+        .mode-pill, .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            margin-right: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+        }
+
+        .mode-pill small, .summary-pill small { color: var(--muted); font-weight: 600; }
+
+        .form-grid, .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .form-control, textarea { border-radius: 16px; }
+
+        textarea {
+            min-height: 220px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+
+        .btn-primary {
+            border-radius: 16px;
+            background: var(--accent);
+            border: 0;
+            font-weight: 700;
+        }
+
+        .metric-card {
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+            padding: 16px 18px;
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .metric-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+        .metric-value.green { color: #16a34a; }
+        .metric-value.red { color: #dc2626; }
+        .metric-value.navy { color: var(--navy); }
+
+        .error-list { margin: 0; padding-left: 20px; color: #9c3e22; }
+
+        .market-accuracy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .market-accuracy-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 16px 18px;
+        }
+
+        .market-accuracy-card .market-name {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .hit-rate-value {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .hit-rate-value.strong { color: #16a34a; }
+        .hit-rate-value.good   { color: #ca8a04; }
+        .hit-rate-value.weak   { color: #dc2626; }
+        .hit-rate-value.na     { color: var(--muted); font-size: 1.4rem; }
+
+        .hit-rate-bar-bg {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--line);
+            margin: 10px 0 8px;
+            overflow: hidden;
+        }
+
+        .hit-rate-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--accent);
+            transition: width 0.4s ease;
+        }
+
+        .market-accuracy-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .date-chip-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+        .date-chip {
+            padding: 10px 12px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font-size: 0.92rem;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--ink);
+            transition: background 0.15s;
+        }
+
+        .date-chip:hover { background: #f0ebe3; color: var(--ink); text-decoration: none; }
+
+        .quick-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+        .quick-chip {
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--navy);
+            transition: background 0.15s;
+        }
+
+        .quick-chip:hover { background: var(--navy); color: #fff; }
+
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+
+        th {
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input, .search-bar select {
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            padding: 8px 14px;
+            font-size: 0.92rem;
+            background: #fff;
+        }
+
+        .search-bar input { min-width: 200px; }
+
+        .pending-player { display: inline-block; padding: 3px 10px; border-radius: 999px; background: rgba(22,49,74,0.08); font-size: 0.82rem; margin: 2px; }
+
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .streak-hit { background: rgba(34,197,94,0.15); color: #16a34a; }
+        .streak-miss { background: rgba(239,68,68,0.12); color: #dc2626; }
+
+        .player-tbl td, .player-tbl th { padding: 8px 12px; }
+
+        details summary { cursor: pointer; font-weight: 700; list-style: none; }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::before { content: "+ "; color: var(--accent); }
+        details[open] summary::before { content: "- "; }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="toolbar">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        <!-- Hero -->
+        <section class="hero-card">
+            <h1>Post-Game Accuracy Review</h1>
+            <p>Score predictions against real outcomes and track your Underdog P&amp;L.</p>
+            <div class="mode-pill">{{ data_mode.label }} <small>{{ data_mode.detail }}</small></div>
+            <div class="summary-pill">Scored rows <small>{{ accuracy_summary.scored_rows }}</small></div>
+            <div class="summary-pill">Player games <small>{{ accuracy_summary.player_games }}</small></div>
+            <div class="summary-pill">Model rating <small>{{ accuracy_summary.accuracy_rating }}</small></div>
+        </section>
+
+        <!-- Pending Picks -->
+        {% if pending_picks %}
+        <section class="panel">
+            <h2>Open Picks (Not Yet Scored)</h2>
+            <p>These predictions have no actual results attached yet — games may still be live or upcoming.</p>
+            {% for group in pending_picks %}
+            <div style="margin-top: 14px;">
+                <strong>{{ group.game_date }}</strong> — {{ group.count }} pick{{ 's' if group.count != 1 else '' }}
+                <div style="margin-top: 6px;">
+                    {% for player in group.players %}
+                    <span class="pending-player">{{ player }}</span>
+                    {% endfor %}
+                    {% if group.count > group.players|length %}
+                    <span class="pending-player" style="color:var(--muted);">+{{ group.count - group.players|length }} more</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Import Results -->
+        <section class="panel">
+            <h2>Import Actual Results</h2>
+            <p>Use <strong>Auto-fetch</strong> to pull real post-game stats from tracked player/date rows, or paste your own CSV.</p>
+            {% if tracked_dates %}
+            <div class="date-chip-row">
+                {% for row in tracked_dates[:8] %}
+                <div class="date-chip">{{ row.game_date }} | {{ row.rows }} tracked | {{ row.scored_rows }} scored</div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No tracked prediction dates yet. Generate predictions with lines first.</p>
+            {% endif %}
+            <form action="/accuracy-review" method="POST" enctype="multipart/form-data" style="margin-top:16px;">
+                <div class="form-grid">
+                    <select name="result_source" class="form-control">
+                        <option value="auto" {% if result_source == 'auto' %}selected{% endif %}>Auto-fetch from nba_api</option>
+                        <option value="upload" {% if result_source != 'auto' %}selected{% endif %}>Upload or paste CSV</option>
+                    </select>
+                </div>
+                <div class="form-grid">
+                    <input type="date" name="default_game_date" class="form-control" value="{{ default_values.game_date }}">
+                    <input type="text" name="default_opponent_abbr" class="form-control" placeholder="Default opponent" value="{{ default_values.opponent_abbr }}">
+                </div>
+                <div class="form-group">
+                    <label for="csv-file">Upload actual-results CSV</label>
+                    <input id="csv-file" type="file" name="csv_file" accept=".csv,.txt,text/csv,text/plain" class="form-control-file">
+                </div>
+                <div class="form-group">
+                    <label for="csv-text">Or paste actual-results CSV</label>
+                    <textarea id="csv-text" name="csv_text" class="form-control">{{ default_values.csv_text }}</textarea>
+                    <small class="form-text text-muted">Leave blank when using Auto-fetch.</small>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    <button type="submit" class="btn btn-primary">Score Predictions</button>
+                    <button type="submit" name="quick_action" value="yesterday" class="btn btn-secondary">Fetch Yesterday</button>
+                    <button type="submit" name="quick_action" value="today" class="btn btn-secondary">Fetch Today</button>
+                </div>
+            </form>
+            <details style="margin-top:14px;">
+                <summary style="color:var(--muted); font-size:0.88rem;">Show CSV format</summary>
+                <pre style="margin-top:8px; font-size:0.82rem;">{{ sample_csv }}</pre>
+            </details>
+        </section>
+
+        {% if review_errors %}
+        <section class="panel">
+            <h2>Review Notes</h2>
+            <ul class="error-list">
+                {% for error in review_errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% if review_summary %}
+        <section class="panel">
+            <h2>Import Summary</h2>
+            <p>Updated {{ review_summary.matched_rows }} tracked market rows across {{ review_summary.updated_players }} player results.</p>
+        </section>
+        {% endif %}
+
+        <!-- Accuracy Dashboard -->
+        <section class="panel">
+            <h2>Accuracy Dashboard</h2>
+            <div class="summary-grid">
+                <div class="metric-card">
+                    <span class="metric-label">Accuracy Rating</span>
+                    <div class="metric-value navy">{{ accuracy_summary.accuracy_rating }}</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Overall MAE</span>
+                    <div class="metric-value">{{ accuracy_summary.overall_mae if accuracy_summary.overall_mae is not none else 'N/A' }}</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Pick Hit Rate</span>
+                    <div class="metric-value">{% if accuracy_summary.pick_hit_rate is not none %}{{ accuracy_summary.pick_hit_rate }}%{% else %}N/A{% endif %}</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Accuracy Cards -->
+        <section class="panel">
+            <h2>Market Accuracy</h2>
+            <p>Pick hit rate per market from all scored predictions.</p>
+            {% if accuracy_summary.market_summaries %}
+            <div class="market-accuracy-grid">
+                {% for row in accuracy_summary.market_summaries %}
+                {% set hr = row.pick_hit_rate %}
+                {% set hr_class = 'na' if hr is none else ('strong' if hr >= 55 else ('good' if hr >= 50 else 'weak')) %}
+                {% set bar_pct = (hr | float) if hr is not none else 0 %}
+                <div class="market-accuracy-card">
+                    <div class="market-name">{{ row.market }}</div>
+                    <div class="hit-rate-value {{ hr_class }}">
+                        {% if hr is not none %}{{ hr }}%{% else %}N/A{% endif %}
+                    </div>
+                    <div class="hit-rate-bar-bg">
+                        <div class="hit-rate-bar-fill" style="width: {{ [bar_pct, 100] | min }}%;"></div>
+                    </div>
+                    <div class="market-accuracy-meta">
+                        {{ row.count }} picks &middot; MAE {{ row.mae }} &middot; {{ row.within_rate }}% within ±{{ row.tolerance }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No post-game results have been scored yet. Score yesterday's picks using the form above.</p>
+            {% endif %}
+        </section>
+
+        <!-- Per-Player Accuracy -->
+        {% if player_accuracy %}
+        <section class="panel">
+            <h2>Per-Player Accuracy</h2>
+            <p>Hit rate and average error by player, sorted by prediction volume.</p>
+            <div class="table-wrap">
+                <table class="player-tbl">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Picks</th>
+                            <th>Hits</th>
+                            <th>Hit Rate</th>
+                            <th>Avg Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in player_accuracy %}
+                        <tr>
+                            <td><strong>{{ row.player_name }}</strong></td>
+                            <td>{{ row.total_picks }}</td>
+                            <td>{{ row.hits }}</td>
+                            <td>
+                                {% if row.hit_rate is not none %}
+                                <span style="font-weight:700; color:{% if row.hit_rate >= 60 %}#16a34a{% elif row.hit_rate < 45 %}#dc2626{% else %}var(--ink){% endif %};">
+                                    {{ row.hit_rate }}%
+                                </span>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>{{ row.avg_error if row.avg_error is not none else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Prediction Report -->
+        <section class="panel">
+            <h2>Prediction Report</h2>
+            <p>Filter scored predictions to see projection vs. line vs. actual result, hit/miss, and P&amp;L.</p>
+
+            <!-- Quick date chips -->
+            <div class="quick-chips" id="quick-chips">
+                <span class="quick-chip" onclick="setDateRange('today')">Today</span>
+                <span class="quick-chip" onclick="setDateRange('yesterday')">Yesterday</span>
+                <span class="quick-chip" onclick="setDateRange('7d')">Last 7 Days</span>
+                <span class="quick-chip" onclick="setDateRange('30d')">Last 30 Days</span>
+                <span class="quick-chip" onclick="setDateRange('all')">All Time</span>
+            </div>
+
+            <form action="/accuracy-review" method="GET" id="report-form">
+                <div class="form-grid">
+                    <div>
+                        <label style="font-size:0.8rem;color:var(--muted);margin-bottom:4px;display:block;">From</label>
+                        <input type="date" name="report_date_from" id="report_date_from" class="form-control" value="{{ report_filters.date_from }}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:var(--muted);margin-bottom:4px;display:block;">To</label>
+                        <input type="date" name="report_date_to" id="report_date_to" class="form-control" value="{{ report_filters.date_to }}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem;color:var(--muted);margin-bottom:4px;display:block;">Single Date</label>
+                        <input type="date" name="report_game_date" id="report_game_date" class="form-control" value="{{ report_filters.game_date }}">
+                    </div>
+                    <select name="report_sportsbook" class="form-control">
+                        <option value="">All sportsbooks</option>
+                        <option value="Underdog" {% if report_filters.sportsbook == 'Underdog' %}selected{% endif %}>Underdog Only</option>
+                    </select>
+                    <select name="report_market" class="form-control">
+                        <option value="">All markets</option>
+                        {% for market in report_market_options %}
+                        <option value="{{ market }}" {% if report_filters.market == market %}selected{% endif %}>{{ market }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="report_limit" class="form-control" min="10" max="500" value="{{ report_filters.limit }}" placeholder="Row limit">
+                </div>
+                <button type="submit" class="btn btn-primary">Run Report</button>
+            </form>
+
+            <!-- Summary metrics -->
+            <div class="summary-grid" style="margin-top: 16px;">
+                <div class="metric-card">
+                    <span class="metric-label">Matching Rows</span>
+                    <div class="metric-value navy">{{ report_summary.total_rows }}</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Avg Abs Error</span>
+                    <div class="metric-value">{{ report_summary.avg_abs_error if report_summary.avg_abs_error is not none else 'N/A' }}</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Pick Hit Rate</span>
+                    <div class="metric-value">{% if report_summary.pick_hit_rate is not none %}{{ report_summary.pick_hit_rate }}%{% else %}N/A{% endif %}</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Underdog P&amp;L ($10/pick)</span>
+                    {% if report_summary.pnl is not none %}
+                    <div class="metric-value {% if report_summary.pnl >= 0 %}green{% else %}red{% endif %}">
+                        {% if report_summary.pnl >= 0 %}+{% endif %}${{ report_summary.pnl }}
+                    </div>
+                    <div style="font-size:0.82rem;color:var(--muted);margin-top:2px;">
+                        {{ report_summary.pnl_roi }}% ROI over {{ report_summary.pnl_count }} picks
+                    </div>
+                    {% else %}
+                    <div class="metric-value">N/A</div>
+                    {% endif %}
+                </div>
+                {% if report_summary.streak and report_summary.streak_type %}
+                <div class="metric-card" style="display:flex;flex-direction:column;justify-content:center;">
+                    <span class="metric-label">Current Streak</span>
+                    <div style="margin-top:6px;">
+                        <span class="streak-badge {% if report_summary.streak_type == 'HIT' %}streak-hit{% else %}streak-miss{% endif %}">
+                            {% if report_summary.streak_type == 'HIT' %}✓{% else %}✗{% endif %}
+                            {{ report_summary.streak }}× {{ report_summary.streak_type }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Client-side search/filter -->
+            {% if report_rows %}
+            <div class="search-bar" style="margin-top: 16px;">
+                <input type="text" id="player-search" placeholder="Search player..." oninput="filterTable()">
+                <select id="market-filter" onchange="filterTable()">
+                    <option value="">All markets</option>
+                    {% for market in report_market_options %}
+                    <option value="{{ market }}">{{ market }}</option>
+                    {% endfor %}
+                </select>
+                <select id="hit-filter" onchange="filterTable()">
+                    <option value="">All results</option>
+                    <option value="hit">Hits only</option>
+                    <option value="miss">Misses only</option>
+                    <option value="unscored">Unscored</option>
+                </select>
+                <span id="filter-count" style="padding:8px 0;font-size:0.88rem;color:var(--muted);"></span>
+            </div>
+            <div class="table-wrap">
+                <table id="report-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Player</th>
+                            <th>Opp</th>
+                            <th>Market</th>
+                            <th>Pick</th>
+                            <th>Model</th>
+                            <th>Line</th>
+                            <th>Actual</th>
+                            <th>Error</th>
+                            <th>Edge</th>
+                            <th>Result</th>
+                            <th>Hit?</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-tbody">
+                        {% for row in report_rows %}
+                        <tr class="report-row"
+                            data-player="{{ row.player_name | lower }}"
+                            data-market="{{ row.market }}"
+                            data-hit="{{ row.pick_hit }}"
+                            style="{% if row.pick_hit == '1' %}background:var(--hit);{% elif row.pick_hit == '0' %}background:var(--miss);{% endif %}">
+                            <td>{{ row.game_date }}</td>
+                            <td><strong>{{ row.player_name }}</strong></td>
+                            <td>{{ row.opponent_abbr }}</td>
+                            <td>{{ row.market }}</td>
+                            <td>
+                                {% if row.pick_side == 'More' %}
+                                    <span style="color:#16a34a;font-weight:700;">&#9650; Higher</span>
+                                {% elif row.pick_side == 'Less' %}
+                                    <span style="color:#dc2626;font-weight:700;">&#9660; Lower</span>
+                                {% else %}
+                                    <span style="color:var(--muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ row.model_projection }}</td>
+                            <td>{% if row.sportsbook_line is not none %}{{ row.sportsbook_line }}{% else %}—{% endif %}</td>
+                            <td><strong>{{ row.actual_result }}</strong></td>
+                            <td style="{% if row.prediction_error|float > 0 %}color:#dc2626{% elif row.prediction_error|float < 0 %}color:#16a34a{% endif %}">
+                                {{ row.prediction_error }}
+                            </td>
+                            <td>{{ row.edge_label if row.edge_label else '—' }}</td>
+                            <td>{{ row.pick_result if row.pick_result else '—' }}</td>
+                            <td style="font-weight:700;">
+                                {% if row.pick_hit == '1' %}
+                                    <span style="color:#16a34a;">&#10003; HIT</span>
+                                {% elif row.pick_hit == '0' %}
+                                    <span style="color:#dc2626;">&#10007; MISS</span>
+                                {% else %}
+                                    <span style="color:var(--muted);">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="margin-top: 16px;">No scored prediction rows matched this filter.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <script>
+        // Quick date chips
+        function setDateRange(range) {
+            const today = new Date();
+            const fmt = d => d.toISOString().slice(0, 10);
+            const from = document.getElementById('report_date_from');
+            const to = document.getElementById('report_date_to');
+            const single = document.getElementById('report_game_date');
+            single.value = '';
+            if (range === 'today') {
+                from.value = fmt(today); to.value = fmt(today);
+            } else if (range === 'yesterday') {
+                const y = new Date(today); y.setDate(y.getDate() - 1);
+                from.value = fmt(y); to.value = fmt(y);
+            } else if (range === '7d') {
+                const s = new Date(today); s.setDate(s.getDate() - 6);
+                from.value = fmt(s); to.value = fmt(today);
+            } else if (range === '30d') {
+                const s = new Date(today); s.setDate(s.getDate() - 29);
+                from.value = fmt(s); to.value = fmt(today);
+            } else if (range === 'all') {
+                from.value = ''; to.value = '';
+            }
+            document.getElementById('report-form').submit();
+        }
+
+        // Client-side table filter
+        function filterTable() {
+            const playerQ = document.getElementById('player-search').value.toLowerCase();
+            const marketQ = document.getElementById('market-filter').value;
+            const hitQ = document.getElementById('hit-filter').value;
+            const rows = document.querySelectorAll('.report-row');
+            let visible = 0;
+            rows.forEach(row => {
+                const playerMatch = !playerQ || row.dataset.player.includes(playerQ);
+                const marketMatch = !marketQ || row.dataset.market === marketQ;
+                let hitMatch = true;
+                if (hitQ === 'hit') hitMatch = row.dataset.hit === '1';
+                else if (hitQ === 'miss') hitMatch = row.dataset.hit === '0';
+                else if (hitQ === 'unscored') hitMatch = row.dataset.hit !== '1' && row.dataset.hit !== '0';
+                const show = playerMatch && marketMatch && hitMatch;
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            const countEl = document.getElementById('filter-count');
+            if (countEl) countEl.textContent = `${visible} of ${rows.length} rows`;
+        }
+
+        // Initialize count on load
+        document.addEventListener('DOMContentLoaded', () => { filterTable(); });
+    </script>
+</body>
+</html>

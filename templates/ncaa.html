@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCAA Predictions — Whympire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4efe6;
+            --panel: rgba(255, 252, 247, 0.92);
+            --ink: #151515;
+            --muted: #5c5b57;
+            --accent: #d96f32;
+            --accent-dark: #ab4f1d;
+            --line: rgba(21, 21, 21, 0.08);
+        }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(36, 120, 56, 0.18), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(217, 111, 50, 0.16), transparent 28%),
+                linear-gradient(135deg, #f8f2e7 0%, #f2ece4 40%, #ece8de 100%);
+        }
+        .page-shell {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 38px 16px 56px;
+        }
+        .main-card {
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            overflow: hidden;
+            background: var(--panel);
+            box-shadow: 0 24px 65px rgba(0,0,0,0.1);
+        }
+        .card-header-band {
+            padding: 32px 36px 20px;
+            background: linear-gradient(180deg, rgba(21,21,21,0.96), rgba(29,29,29,0.92));
+            color: #fff;
+        }
+        .card-header-band h1 {
+            margin: 0 0 8px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            letter-spacing: -0.04em;
+        }
+        .card-header-band p {
+            margin: 0;
+            color: rgba(255,255,255,0.65);
+            font-size: 1rem;
+        }
+        .card-body-pad {
+            padding: 28px 36px 36px;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .form-control, .custom-select {
+            height: 52px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            font-size: 1rem;
+        }
+        .btn-predict {
+            height: 52px;
+            border-radius: 14px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 0;
+            width: 100%;
+        }
+        .btn-predict:hover { background: var(--accent-dark); color: #fff; }
+        .error-banner {
+            margin-top: 20px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: rgba(180, 40, 40, 0.09);
+            border: 1px solid rgba(180,40,40,0.18);
+            color: #8b2020;
+            font-weight: 600;
+        }
+        .divider { height: 1px; background: var(--line); margin: 28px 0; }
+        .result-section h2 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+        .player-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .meta-chip {
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .pick-banner {
+            padding: 20px 22px;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pick-over  { background: rgba(36,127,68,0.12); border: 1px solid rgba(36,127,68,0.22); }
+        .pick-under { background: rgba(170,67,42,0.12); border: 1px solid rgba(170,67,42,0.22); }
+        .pick-label {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+        .pick-over  .pick-label { color: #1f6f3e; }
+        .pick-under .pick-label { color: #9c3e22; }
+        .pick-detail { font-size: 0.95rem; color: var(--muted); }
+        .pick-detail strong { color: var(--ink); }
+        .confidence-pill {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+        .conf-high   { background: rgba(217,111,50,0.16); color: #b75523; }
+        .conf-medium { background: rgba(36,127,68,0.14);  color: #1f6f3e; }
+        .conf-low    { background: rgba(22,49,74,0.08);   color: #16314a; }
+        .proj-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .proj-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 14px 16px;
+        }
+        .proj-label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .proj-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .source-note {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .back-btn {
+            margin-top: 24px;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 999px;
+            background: rgba(21,21,21,0.07);
+            font-weight: 700;
+            color: var(--ink);
+            text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(21,21,21,0.13); color: var(--ink); text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="main-card">
+        <div class="card-header-band">
+            <h1>NCAA Predictions</h1>
+            <p>College basketball prop predictions — search a player, enter a stat line, get an over/under edge.</p>
+        </div>
+        <div class="card-body-pad">
+
+            <form method="POST" action="/ncaa">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">Player Name</label>
+                        <input type="text" name="player_name" class="form-control"
+                               placeholder="e.g. Cooper Flagg"
+                               value="{{ form.get('player_name', '') }}" required>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="form-label">Stat</label>
+                        <select name="stat_type" class="custom-select">
+                            {% set stats = [('points','Points'),('rebounds','Rebounds'),('assists','Assists'),('minutes','Minutes'),('fg_pct','FG%'),('three_pt_pct','3P%'),('turnovers','Turnovers')] %}
+                            {% for val, label in stats %}
+                                <option value="{{ val }}" {% if form.get('stat_type', 'points') == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="form-label">Sportsbook Line</label>
+                        <input type="number" step="0.5" name="stat_line" class="form-control"
+                               placeholder="e.g. 18.5"
+                               value="{{ form.get('stat_line', '') }}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="form-label">Opponent (optional)</label>
+                        <input type="text" name="opponent" class="form-control"
+                               placeholder="e.g. DUKE or leave blank"
+                               value="{{ form.get('opponent', '') }}">
+                    </div>
+                    <div class="form-group col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn-predict">Get Prediction</button>
+                    </div>
+                </div>
+            </form>
+
+            {% if error %}
+            <div class="error-banner">{{ error }}</div>
+            {% endif %}
+
+            {% if result %}
+            <div class="divider"></div>
+            <div class="result-section">
+                <h2>{{ result.player_name }}</h2>
+                <div class="player-meta">
+                    <span class="meta-chip">{{ result.team_name or 'NCAA' }}</span>
+                    <span class="meta-chip">Season {{ result.season }}</span>
+                    {% if result.opponent %}<span class="meta-chip">vs {{ result.opponent }}</span>{% endif %}
+                    <span class="meta-chip">{{ result.stat_type | upper }} line {{ result.stat_line }}</span>
+                </div>
+
+                <div class="pick-banner pick-{{ result.pick }}">
+                    <div>
+                        <div class="pick-label">{{ result.pick | upper }}</div>
+                        <div class="pick-detail">
+                            Projected <strong>{{ result.projected_stat }}</strong> vs line <strong>{{ result.stat_line }}</strong>
+                            &nbsp;·&nbsp; Edge <strong>{% if result.edge >= 0 %}+{% endif %}{{ result.edge }}</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="confidence-pill conf-{{ result.confidence.label | lower }}">
+                            {{ result.confidence.label }} Confidence
+                        </span>
+                        <div class="pick-detail" style="margin-top:6px;">
+                            Error band ±{{ result.confidence.error_band }}
+                            &nbsp;·&nbsp; Ratio {{ result.confidence.edge_to_error_ratio }}
+                        </div>
+                    </div>
+                </div>
+
+                <h6 style="font-weight:700;margin-bottom:12px;">All Projections</h6>
+                <div class="proj-grid">
+                    {% set proj_labels = [('points','Points'),('rebounds','Rebounds'),('assists','Assists'),('minutes','Minutes'),('fg_pct','FG%'),('three_pt_pct','3P%'),('turnovers','Turnovers')] %}
+                    {% for key, label in proj_labels %}
+                    <div class="proj-card">
+                        <span class="proj-label">{{ label }}</span>
+                        <div class="proj-value">{{ result.all_projections[key] }}</div>
+                        <small style="color:var(--muted);font-size:0.78rem;">{{ result.projection_sources.get(key, 'heuristic') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="source-note">
+                    Model source: <strong>{{ result.model_source }}</strong>
+                    &nbsp;·&nbsp; Stat type: <strong>{{ result.stat_type }}</strong>
+                </div>
+            </div>
+            {% endif %}
+
+            <a href="/" class="back-btn">← Back to Home</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

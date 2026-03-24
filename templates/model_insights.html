@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+        }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+        .page-shell { max-width: 1320px; margin: 0 auto; padding: 28px 16px 48px; }
+        .panel, .hero-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        .hero-card h1, .panel h2 { margin: 0; font-family: "Space Grotesk", sans-serif; letter-spacing: -0.04em; }
+        .hero-card p, .panel p { margin: 8px 0 0; color: var(--muted); }
+        .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+        .toolbar .btn { border-radius:999px; padding:12px 18px; font-weight:700; }
+        .target-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:18px; }
+        .stats-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+        .pill {
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:10px 14px;
+            border-radius:999px;
+            border:1px solid var(--line);
+            background:#fff;
+            font-weight:700;
+        }
+        .pill small { color: var(--muted); font-weight: 600; }
+        .section-title { margin: 18px 0 10px; font-weight: 700; font-size: 1rem; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:10px 12px; border-bottom:1px solid var(--line); }
+        th {
+            color:var(--muted);
+            font-size:0.82rem;
+            text-transform:uppercase;
+            letter-spacing:0.04em;
+        }
+        .table-wrap { overflow-x:auto; }
+        .feature-name { font-family: "Space Grotesk", sans-serif; font-size: 0.95rem; }
+        .error-note { color:#9c3e22; }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="toolbar">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        <section class="hero-card">
+            <h1>Model Insights</h1>
+            <p>This page shows which feature groups and individual signals are carrying the strongest weight in your current points, assists, and rebounds models.</p>
+        </section>
+
+        {% if insights_error %}
+        <section class="panel">
+            <p class="error-note">{{ insights_error }}</p>
+        </section>
+        {% endif %}
+
+        {% if insights %}
+        <section class="target-grid">
+            {% for target in insights.targets %}
+            <article class="panel">
+                <h2>{{ target.name }}</h2>
+                <div class="stats-row">
+                    <div class="pill">MAE <small>{{ target.metrics.mae }}</small></div>
+                    <div class="pill">R² <small>{{ target.metrics.r2 }}</small></div>
+                </div>
+
+                <div class="section-title">Strongest Feature Groups</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in target.top_groups %}
+                            <tr>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.share_pct }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section-title">Top Individual Features</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Group</th>
+                                <th>Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in target.top_features %}
+                            <tr>
+                                <td class="feature-name">{{ row.name }}</td>
+                                <td>{{ row.group }}</td>
+                                <td>{{ row.share_pct }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+        {% endif %}
+    </div>
+</body>
+</html>

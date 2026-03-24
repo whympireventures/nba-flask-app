@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
+
+# Data (large files — keep on server only)
+data/player_game_logs.csv
+data/discrepancy_history.csv
+
+# Logs
+logs/
+
+# macOS
+.DS_Store
+
+# IDE
+.claude/

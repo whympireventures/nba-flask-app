@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whympire NBA Sports Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8;
+            --panel: rgba(255, 252, 248, 0.94);
+            --ink: #171717;
+            --muted: #5d5c59;
+            --line: rgba(23, 23, 23, 0.08);
+            --accent: #d96f32;
+            --navy: #16314a;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Barlow", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(22, 49, 74, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(217, 111, 50, 0.18), transparent 25%),
+                linear-gradient(160deg, #f8f3eb 0%, #f1ece4 48%, #ebe7df 100%);
+        }
+
+        .page-shell {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 16px 48px;
+        }
+
+        .hero-card,
+        .table-shell {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+        }
+
+        .hero-card {
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+
+        .hero-card h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            letter-spacing: -0.04em;
+        }
+
+        .hero-card p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 1.04rem;
+        }
+
+        .mode-pill,
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            margin-right: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+        }
+
+        .mode-pill small,
+        .summary-pill small {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: end;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 12px;
+        }
+
+        .toolbar .btn {
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: minmax(150px, 1fr) auto;
+            gap: 12px;
+            max-width: 340px;
+        }
+
+        .filter-form .form-control {
+            height: 48px;
+            border-radius: 14px;
+        }
+
+        .filter-form .btn {
+            height: 48px;
+            border-radius: 14px;
+            border: 0;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .table-shell {
+            overflow: hidden;
+        }
+
+        .board-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 18px 0 0;
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .tag-chip:hover {
+            text-decoration: none;
+            color: var(--ink);
+        }
+
+        .tag-chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .slate-builder {
+            margin: 18px 0;
+            padding: 20px;
+            border-radius: 24px;
+            border: 1px solid var(--line);
+            background: rgba(22, 49, 74, 0.05);
+        }
+
+        .slate-builder h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .slate-builder p {
+            margin: 8px 0 16px;
+            color: var(--muted);
+        }
+
+        .slate-builder-form {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+            gap: 12px;
+        }
+
+        .slate-builder-form .custom-select,
+        .slate-builder-form .form-control {
+            height: 50px;
+            border-radius: 14px;
+        }
+
+        .slate-builder-form .btn {
+            height: 50px;
+            border-radius: 14px;
+            border: 0;
+            background: var(--navy);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .table-footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px 22px;
+            border-top: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .table-footer-copy {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .pagination-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .page-link-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .page-link-chip:hover {
+            text-decoration: none;
+            color: var(--ink);
+            border-color: rgba(22, 49, 74, 0.18);
+        }
+
+        .page-link-chip.active {
+            background: var(--navy);
+            border-color: var(--navy);
+            color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            white-space: nowrap;
+        }
+
+        th {
+            background: rgba(22, 49, 74, 0.05);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .edge-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .edge-over {
+            background: rgba(36, 127, 68, 0.14);
+            color: #1f6f3e;
+        }
+
+        .edge-under {
+            background: rgba(170, 67, 42, 0.14);
+            color: #9c3e22;
+        }
+
+        .edge-neutral {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy);
+        }
+
+        .signal-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .signal-best {
+            background: rgba(217, 111, 50, 0.16);
+            color: #b75523;
+        }
+
+        .signal-lean {
+            background: rgba(36, 127, 68, 0.14);
+            color: #1f6f3e;
+        }
+
+        .signal-pass {
+            background: rgba(22, 49, 74, 0.08);
+            color: var(--navy);
+        }
+
+        .rank-chip {
+            display: inline-flex;
+            min-width: 36px;
+            justify-content: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: rgba(22, 49, 74, 0.08);
+            font-weight: 700;
+        }
+
+        .empty-state {
+            padding: 42px 26px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .setup-panel {
+            margin-bottom: 18px;
+            padding: 18px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: rgba(217, 111, 50, 0.08);
+        }
+
+        .setup-panel strong {
+            display: block;
+            margin-bottom: 6px;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .setup-panel code {
+            display: inline-block;
+            margin-top: 8px;
+            white-space: pre-wrap;
+        }
+
+        .combo-section {
+            margin: 18px 0;
+        }
+
+        .combo-section-header {
+            margin-bottom: 14px;
+        }
+
+        .combo-section-header h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .combo-section-header p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .combo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .combo-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .combo-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .combo-size-badge {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .combo-edge-total {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            background: rgba(217, 111, 50, 0.14);
+            color: #b75523;
+        }
+
+        .combo-pick {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .combo-pick:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .combo-pick-info {
+            min-width: 0;
+        }
+
+        .combo-player-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .combo-pick-detail {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .combo-pick-edge {
+            flex-shrink: 0;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 999px;
+        }
+
+        .combo-empty {
+            padding: 20px 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1100px) {
+            .combo-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .combo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .movers-section {
+            margin: 18px 0;
+        }
+
+        .movers-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .movers-header h2 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .movers-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .movers-table-shell {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .delta-up {
+            color: #9c3e22;
+            font-weight: 700;
+        }
+
+        .delta-down {
+            color: #1f6f3e;
+            font-weight: 700;
+        }
+
+        .snapshot-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: rgba(22, 49, 74, 0.04);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            margin-bottom: 14px;
+        }
+
+        .snapshot-bar p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .btn-snapshot {
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-weight: 700;
+            border: 0;
+            background: var(--navy);
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .btn-snapshot:hover {
+            opacity: 0.88;
+            color: #fff;
+        }
+
+        @media (max-width: 991px) {
+            .slate-builder-form {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767px) {
+            .slate-builder-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .nav-modules {
+            margin-top: 24px;
+            padding: 40px 48px;
+            border-radius: 28px;
+            background: linear-gradient(180deg, rgba(21,21,21,0.96), rgba(29,29,29,0.92));
+            color: #fff;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 0;
+        }
+
+        .nav-module {
+            padding: 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .nav-module h2 {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .nav-module p {
+            color: rgba(255,255,255,0.62);
+            font-size: 0.88rem;
+            margin-bottom: 14px;
+        }
+
+        .nav-module .form-control,
+        .nav-module .custom-select {
+            height: 46px;
+            border: 0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .nav-module .btn-mod {
+            display: block;
+            width: 100%;
+            height: 46px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            text-align: center;
+            line-height: 46px;
+            text-decoration: none;
+        }
+
+        .nav-module .btn-mod:hover {
+            opacity: 0.88;
+            color: #fff;
+        }
+
+        .nav-module .btn-mod-light {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .nav-module .btn-mod-light:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        @media (max-width: 767px) {
+            .nav-modules {
+                padding: 24px;
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <div class="toolbar">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+            {% if board_source in ('Underdog', 'Underdog NCAAB') %}
+            <div style="display:inline-flex;gap:8px;margin-left:8px;">
+                <a href="{{ url_for('underdog_board', min_edge=filters.min_edge, market=filters.market) }}"
+                   class="btn {% if board_source == 'Underdog' %}btn-primary{% else %}btn-secondary{% endif %}">NBA</a>
+                <a href="{{ url_for('underdog_ncaab_board', min_edge=filters.min_edge, market=filters.market) }}"
+                   class="btn {% if board_source == 'Underdog NCAAB' %}btn-primary{% else %}btn-secondary{% endif %}">NCAAB</a>
+            </div>
+            {% endif %}
+            <div class="toolbar-actions">
+                {% if board_source == 'Underdog' %}
+                <a href="{{ url_for('export_underdog_board', min_edge=filters.min_edge, market=filters.market) }}" class="btn btn-secondary">Export CSV</a>
+                <button id="log-all-btn" class="btn btn-secondary" onclick="logAllLines(this)">Log All Lines</button>
+                {% endif %}
+                <form action="{{ request.path }}" method="GET" class="filter-form">
+                    {% if filters.market and filters.market != 'all' %}
+                    <input type="hidden" name="market" value="{{ filters.market }}">
+                    {% endif %}
+                    <input type="number" name="min_edge" class="form-control" min="0" step="0.5" value="{{ filters.min_edge }}">
+                    <button type="submit" class="btn">Refresh Board</button>
+                </form>
+            </div>
+        </div>
+
+        <section class="hero-card">
+            <h1>{{ board_title if board_title else 'PrizePicks Edge Board' }}</h1>
+            <p>{{ board_summary.message }}</p>
+            <div class="mode-pill">{{ data_mode.label }} <small>{{ data_mode.detail }}</small></div>
+            <div class="summary-pill">{{ board_source if board_source else 'PrizePicks' }} lines <small>{{ board_summary.total_lines }}</small></div>
+            <div class="summary-pill">Players on board <small>{{ board_summary.total_players }}</small></div>
+            <div class="summary-pill">Players scored <small>{{ board_summary.matched_players }}</small></div>
+            <div class="summary-pill">Players on page <small>{{ board_summary.displayed_players }}</small></div>
+            <div class="summary-pill">Rows shown <small>{{ board_summary.displayed_rows }}</small></div>
+            <div class="summary-pill">Page <small>{{ pagination.page }} / {{ pagination.total_pages }}</small></div>
+            <div class="summary-pill">Unmatched names <small>{{ board_summary.unmatched_players }}</small></div>
+            {% if board_source in ('Underdog', 'Underdog NCAAB') and market_filters %}
+            <div class="board-tags">
+                {% for market_name in market_filters %}
+                <a class="tag-chip {% if market_name == selected_market %}active{% endif %}" href="{{ url_for(request.endpoint, market=market_name, min_edge=filters.min_edge) }}">
+                    {{ 'All Props' if market_name == 'all' else market_name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        {% if board_source == 'Underdog' and board_source != 'Underdog NCAAB' %}
+        <section class="slate-builder">
+            <h2>Build a 30-Player Game Slate</h2>
+            <p>Pick a matchup and compare the top rotation players to current Underdog prop lines in one fast view.</p>
+            <form action="/matchup-predict" method="POST" class="slate-builder-form">
+                <select name="away_team" class="custom-select" required>
+                    <option value="">Away team</option>
+                    {% for team in team_options %}
+                    <option value="{{ team }}">{{ team }}</option>
+                    {% endfor %}
+                </select>
+                <select name="home_team" class="custom-select" required>
+                    <option value="">Home team</option>
+                    {% for team in team_options %}
+                    <option value="{{ team }}">{{ team }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="game_date" class="form-control" required>
+                <button type="submit" class="btn">Build Slate</button>
+            </form>
+            <p style="margin-top: 12px; margin-bottom: 0;">Export CSV downloads the current filtered board and logs those picks into the accuracy tracker so you can score them after the games.</p>
+        </section>
+        {% endif %}
+
+        {% if board_source == 'Underdog' and book_discrepancies %}
+        <section class="combo-section">
+            <div class="combo-section-header">
+                <h2>Cross-Book Line Discrepancies</h2>
+                <p>Biggest gaps between Underdog and other books — sorted by line difference. Green = model agrees with the lower line.</p>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--line);text-align:left;">
+                            <th style="padding:8px 12px;font-weight:700;">Player</th>
+                            <th style="padding:8px 12px;font-weight:700;">Market</th>
+                            <th style="padding:8px 12px;font-weight:700;">UD Line</th>
+                            <th style="padding:8px 12px;font-weight:700;">Other Book</th>
+                            <th style="padding:8px 12px;font-weight:700;">Other Line</th>
+                            <th style="padding:8px 12px;font-weight:700;">Gap</th>
+                            <th style="padding:8px 12px;font-weight:700;">Model</th>
+                            <th style="padding:8px 12px;font-weight:700;">Signal</th>
+                            <th style="padding:8px 12px;font-weight:700;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in book_discrepancies %}
+                        <tr style="border-bottom:1px solid var(--line);">
+                            <td style="padding:8px 12px;font-weight:600;">{{ d.player_name }}</td>
+                            <td style="padding:8px 12px;color:var(--muted);">{{ d.market }}</td>
+                            <td style="padding:8px 12px;">{{ d.ud_line }}</td>
+                            <td style="padding:8px 12px;">
+                                <span style="padding:2px 8px;border-radius:6px;font-size:.8rem;font-weight:700;background:#e8f0fe;color:#1a4a8a;">{{ d.other_book }}</span>
+                            </td>
+                            <td style="padding:8px 12px;">{{ d.other_line }}</td>
+                            <td style="padding:8px 12px;">
+                                <span style="padding:2px 8px;border-radius:6px;font-size:.85rem;font-weight:800;{% if d.gap >= 2.0 %}background:#fef3c7;color:#92400e;{% else %}background:#f3f0eb;color:#171717;{% endif %}">{{ '%+.1f'|format(d.other_line - d.ud_line) }}</span>
+                            </td>
+                            <td style="padding:8px 12px;font-weight:700;">{{ d.model_projection if d.model_projection else '—' }}</td>
+                            <td style="padding:8px 12px;"><span class="signal-pill {{ d.signal_class }}">{{ d.signal_label }}</span></td>
+                            <td style="padding:8px 12px;">
+                                {% if d.player_id %}
+                                <a href="/predict/{{ d.player_id }}?opponent_abbr={{ d.opponent_abbr }}&game_date={{ d.game_date }}" style="font-size:.8rem;color:var(--navy);font-weight:600;">Open</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if board_source == 'Underdog' and parlay_combos %}
+        <section class="combo-section">
+            <div class="combo-section-header">
+                <h2>Best Pick Combos</h2>
+                <p>Highest combined model edge — no duplicate players.</p>
+            </div>
+            <div class="combo-grid">
+                {% for size in [2, 3, 4, 5] %}
+                {% set picks = parlay_combos.get(size, []) %}
+                <div class="combo-card">
+                    <div class="combo-card-header">
+                        <span class="combo-size-badge">{{ size }}-Pick</span>
+                        {% if picks %}
+                        {% set total_edge = picks | sum(attribute='absolute_edge') %}
+                        <span class="combo-edge-total">+{{ "%.1f"|format(total_edge) }} edge</span>
+                        {% endif %}
+                    </div>
+                    {% if picks %}
+                    {% for pick in picks %}
+                    <div class="combo-pick">
+                        <div class="combo-pick-info">
+                            <div class="combo-player-name">{{ pick.player_name }}</div>
+                            <div class="combo-pick-detail">{{ pick.market }} &middot; {{ pick.selection_label }} {{ pick.sportsbook_line }} &middot; {{ pick.opponent_abbr }}</div>
+                        </div>
+                        <span class="combo-pick-edge {{ pick.edge_class }}">{{ pick.edge_label }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="combo-empty">Not enough edges on the board.</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if board_source == 'Underdog' %}
+        <div class="snapshot-bar">
+            <p>
+                {% if latest_snapshot_at %}
+                Last snapshot saved at <strong>{{ latest_snapshot_at }}</strong>.
+                Save a new one to track line movement since then.
+                {% else %}
+                No snapshot saved yet. Hit Save Snapshot, come back later, and see which lines Underdog moved.
+                {% endif %}
+            </p>
+            <form action="{{ url_for('save_underdog_snapshot', min_edge=filters.min_edge, market=filters.market) }}" method="POST" style="margin:0;">
+                <button type="submit" class="btn btn-snapshot">Save Snapshot</button>
+            </form>
+        </div>
+
+        {% if line_movers %}
+        <section class="movers-section">
+            <div class="movers-header">
+                <h2>Line Movers</h2>
+                <span class="movers-meta">vs. snapshot from {{ line_movers[0].saved_at }}</span>
+            </div>
+            <div class="movers-table-shell">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Market</th>
+                                <th>Pick</th>
+                                <th>Opponent</th>
+                                <th>Before</th>
+                                <th>After</th>
+                                <th>Move</th>
+                                <th>Edge Before</th>
+                                <th>Edge After</th>
+                                <th>Signal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in line_movers %}
+                            <tr>
+                                <td>{{ m.player_name }}</td>
+                                <td>{{ m.market }}</td>
+                                <td>{{ m.selection_label }}</td>
+                                <td>{{ m.opponent_abbr }}</td>
+                                <td>{{ m.line_before }}</td>
+                                <td>{{ m.line_after }}</td>
+                                <td>
+                                    <span class="{{ 'delta-up' if m.delta > 0 else 'delta-down' }}">
+                                        {{ m.delta_label }}
+                                    </span>
+                                </td>
+                                <td>{{ m.edge_before }}</td>
+                                <td>{{ m.edge_after }}</td>
+                                <td><span class="signal-pill {{ m.move_signal_class }}">{{ m.move_signal }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+        {% endif %}
+
+        {% if board_source == 'ParlayPlay' and parlayplay_status.message %}
+        <section class="setup-panel">
+            <strong>ParlayPlay Setup</strong>
+            <div>{{ parlayplay_status.message }}</div>
+            <div>{{ parlayplay_status.hint }}</div>
+            <code>export PARLAYPLAY_COOKIE="your_browser_cookie_here"</code>
+        </section>
+        {% endif %}
+        {% if board_source == 'Underdog' and underdog_status.message %}
+        <section class="setup-panel">
+            <strong>Underdog Setup</strong>
+            <div>{{ underdog_status.message }}</div>
+            <div>{{ underdog_status.hint }}</div>
+        </section>
+        {% endif %}
+
+        <section class="table-shell">
+            {% if board_rows %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Market</th>
+                            {% if show_pick_columns %}
+                            <th>Pick</th>
+                            {% endif %}
+                            {% if board_source in ("Underdog", "Underdog NCAAB") %}
+                            <th>Lines</th>
+                            {% else %}
+                            <th>{{ line_label if line_label else 'Line' }}</th>
+                            {% endif %}
+                            <th>Model</th>
+                            <th>{{ edge_label if edge_label else 'Edge' }}</th>
+                            <th>Signal</th>
+                            <th>Card</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in board_rows %}
+                        <tr>
+                            <td>
+                                <div style="font-weight:700;line-height:1.2;">{{ row.player_name }}{% if row.high_confidence_assists %} <span style="background:#f59e0b;color:#1a1a1a;font-size:.65rem;font-weight:800;padding:1px 5px;border-radius:4px;vertical-align:middle;letter-spacing:.03em;">HC AST</span>{% endif %}{% if board_source == 'Underdog' and row.pp_line is not none and (row.pp_line - row.sportsbook_line | float) | abs >= 1.0 %} <span style="background:#e8f0fe;color:#1a4a8a;font-size:.65rem;font-weight:800;padding:1px 5px;border-radius:4px;vertical-align:middle;">PP {{ '%+.1f'|format(row.pp_line - row.sportsbook_line | float) }}</span>{% endif %}</div>
+                                <div style="font-size:.78rem;color:#5d5c59;margin-top:2px;">vs {{ row.opponent_abbr }}{% if show_pick_columns and row.payout_multiplier_label %} · {{ row.payout_multiplier_label }}{% endif %}</div>
+                            </td>
+                            <td>{{ row.market }}</td>
+                            {% if show_pick_columns %}
+                            <td>{{ row.selection_label if row.selection_label else 'Line' }}</td>
+                            {% endif %}
+                            {% if board_source in ("Underdog", "Underdog NCAAB") %}
+                            {% set ud = row.sportsbook_line | float %}
+                            {% set pp = row.pp_line %}
+                            {% set pplay = row.pplay_line %}
+                            {% set dk = row.odds_api_lines.get('DraftKings') if row.odds_api_lines else none %}
+                            {% set fd = row.odds_api_lines.get('FanDuel') if row.odds_api_lines else none %}
+                            <td>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+                                    {# UD line — always shown, highlight if best #}
+                                    <span style="padding:2px 8px;border-radius:6px;font-size:.82rem;font-weight:700;{% if row.best_book == 'UD' %}background:#eaf7f0;color:#1a7a4a;{% else %}background:#f3f0eb;color:#171717;{% endif %}">UD {{ ud }}</span>
+                                    {# PP #}
+                                    {% if pp is not none %}
+                                    <span style="padding:2px 8px;border-radius:6px;font-size:.82rem;font-weight:700;{% if row.best_book == 'PP' %}background:#eaf7f0;color:#1a7a4a;{% else %}background:#f3f0eb;color:#171717;{% endif %}">PP {{ pp }}{% if pp != ud %}<span style="font-size:.72rem;margin-left:2px;opacity:.7;">({{ '%+.1f'|format(pp-ud) }})</span>{% endif %}</span>
+                                    {% endif %}
+                                    {# ParlayPlay #}
+                                    {% if pplay is not none %}
+                                    <span style="padding:2px 8px;border-radius:6px;font-size:.82rem;font-weight:700;{% if row.best_book == 'PPlay' %}background:#eaf7f0;color:#1a7a4a;{% else %}background:#f3f0eb;color:#171717;{% endif %}">PPlay {{ pplay }}{% if pplay != ud %}<span style="font-size:.72rem;margin-left:2px;opacity:.7;">({{ '%+.1f'|format(pplay-ud) }})</span>{% endif %}</span>
+                                    {% endif %}
+                                    {# DraftKings #}
+                                    {% if dk is not none %}
+                                    <span style="padding:2px 8px;border-radius:6px;font-size:.82rem;font-weight:700;{% if row.best_book == 'DraftKings' %}background:#eaf7f0;color:#1a7a4a;{% else %}background:#f3f0eb;color:#171717;{% endif %}">DK {{ dk }}{% if dk != ud %}<span style="font-size:.72rem;margin-left:2px;opacity:.7;">({{ '%+.1f'|format(dk-ud) }})</span>{% endif %}</span>
+                                    {% endif %}
+                                    {# FanDuel #}
+                                    {% if fd is not none %}
+                                    <span style="padding:2px 8px;border-radius:6px;font-size:.82rem;font-weight:700;{% if row.best_book == 'FanDuel' %}background:#eaf7f0;color:#1a7a4a;{% else %}background:#f3f0eb;color:#171717;{% endif %}">FD {{ fd }}{% if fd != ud %}<span style="font-size:.72rem;margin-left:2px;opacity:.7;">({{ '%+.1f'|format(fd-ud) }})</span>{% endif %}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            {% else %}
+                            <td>{{ row.sportsbook_line }}</td>
+                            {% endif %}
+                            <td>{{ row.model_projection }}</td>
+                            <td><span class="edge-pill {{ row.edge_class }}">{{ row.edge_label }}</span></td>
+                            <td><span class="signal-pill {{ row.signal_class }}">{{ row.signal_label }}</span></td>
+                            {% if board_source == 'Underdog NCAAB' %}
+                            <td><a href="/ncaa?player_name={{ row.player_name | urlencode }}&opponent={{ row.opponent_abbr if row.opponent_abbr != 'N/A' else '' }}">Open</a></td>
+                            {% else %}
+                            <td><a href="/predict/{{ row.player_id }}?opponent_abbr={{ row.opponent_abbr if row.opponent_abbr != 'N/A' else '' }}&game_date={{ row.game_date if row.game_date != 'N/A' else '' }}">Open</a></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if pagination.total_pages > 1 %}
+            <div class="table-footer">
+                <div class="table-footer-copy">
+                    Showing up to {{ pagination.players_per_page }} players per page.
+                </div>
+                <nav class="pagination-nav" aria-label="Board pagination">
+                    {% if pagination.has_prev %}
+                    <a class="page-link-chip" href="{{ url_for(request.endpoint, page=1, min_edge=filters.min_edge, market=filters.market) }}">First</a>
+                    <a class="page-link-chip" href="{{ url_for(request.endpoint, page=pagination.prev_page, min_edge=filters.min_edge, market=filters.market) }}">Prev</a>
+                    {% endif %}
+                    {% for page_number in pagination.page_numbers %}
+                    <a class="page-link-chip {% if page_number == pagination.page %}active{% endif %}" href="{{ url_for(request.endpoint, page=page_number, min_edge=filters.min_edge, market=filters.market) }}">{{ page_number }}</a>
+                    {% endfor %}
+                    {% if pagination.has_next %}
+                    <a class="page-link-chip" href="{{ url_for(request.endpoint, page=pagination.next_page, min_edge=filters.min_edge, market=filters.market) }}">Next</a>
+                    <a class="page-link-chip" href="{{ url_for(request.endpoint, page=pagination.total_pages, min_edge=filters.min_edge, market=filters.market) }}">Last</a>
+                    {% endif %}
+                </nav>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <h2>No {{ board_source if board_source else 'PrizePicks' }} edges to show.</h2>
+                <p>Try lowering the minimum edge or retry later if the board is temporarily unavailable.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        {% if board_source == 'Underdog' %}
+        <div class="nav-modules">
+            <div class="nav-module">
+                <h2>Player Search</h2>
+                <p>Search by name, auto-fill Underdog lines, and generate a matchup-aware prop card.</p>
+                <form action="/search" method="POST">
+                    <input type="text" name="query" class="form-control" placeholder="e.g. Curry" required>
+                    <button type="submit" class="btn-mod">Search Players</button>
+                </form>
+            </div>
+            <div class="nav-module">
+                <h2>Build a Game Slate</h2>
+                <p>Project all rotation players from a matchup and compare to Underdog lines.</p>
+                <form action="/matchup-predict" method="POST">
+                    <select name="away_team" class="form-control custom-select" required>
+                        <option value="">Away team</option>
+                        {% for team in team_options %}<option value="{{ team }}">{{ team }}</option>{% endfor %}
+                    </select>
+                    <select name="home_team" class="form-control custom-select" required>
+                        <option value="">Home team</option>
+                        {% for team in team_options %}<option value="{{ team }}">{{ team }}</option>{% endfor %}
+                    </select>
+                    <input type="date" name="game_date" class="form-control" style="margin-bottom:8px;" required>
+                    <button type="submit" class="btn-mod">Build Slate</button>
+                </form>
+            </div>
+            <div class="nav-module">
+                <h2>Live Scores</h2>
+                <p>Today's NBA games with live scores, quarter, and time remaining.</p>
+                <a href="/live-scores" class="btn-mod">Open Live Scores</a>
+            </div>
+            <div class="nav-module">
+                <h2>Bulk Import Lines</h2>
+                <p>Paste or upload a CSV of prop lines, compare to the model, and log edges in one batch.</p>
+                <a href="/import-lines" class="btn-mod btn-mod-light">Open Import Tool</a>
+            </div>
+            <div class="nav-module">
+                <h2>Post-Game Accuracy</h2>
+                <p>Upload box scores after games and see how your logged predictions graded out.</p>
+                <a href="/accuracy-review" class="btn-mod btn-mod-light">Open Accuracy Review</a>
+            </div>
+            <div class="nav-module">
+                <h2>Historical Backtest</h2>
+                <p>Run the model against a past NBA date and compare predictions to real results.</p>
+                <a href="/historical-backtest" class="btn-mod btn-mod-light">Open Backtest</a>
+            </div>
+            <div class="nav-module">
+                <h2>Model Insights</h2>
+                <p>See which feature groups and signals are driving points, assists, and rebounds.</p>
+                <a href="/model-insights" class="btn-mod btn-mod-light">Open Model Insights</a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+<script>
+function logAllLines(btn) {
+    btn.disabled = true;
+    btn.textContent = 'Logging...';
+    fetch('/underdog-board/log-all', {method: 'POST', headers: {'Content-Type': 'application/json'}})
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                btn.textContent = 'Error';
+                btn.disabled = false;
+            } else {
+                btn.textContent = `Logged ${data.logged} rows`;
+                setTimeout(() => { btn.textContent = 'Log All Lines'; btn.disabled = false; }, 3000);
+            }
+        })
+        .catch(() => { btn.textContent = 'Failed'; btn.disabled = false; });
+}
+</script>
+</body>
+</html>

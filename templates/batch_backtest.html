@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Backtest — Whympire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f6f1e8; --panel: rgba(255,252,248,0.94); --ink: #171717;
+            --muted: #5d5c59; --line: rgba(23,23,23,0.08); --accent: #d96f32;
+            --green: #1a7a4a; --green-bg: #eaf7f0; --red: #9c3e22; --red-bg: #fdf0ec; --yellow: #7a6200;
+        }
+        body { min-height:100vh; margin:0; font-family:"Barlow",sans-serif; color:var(--ink);
+            background: radial-gradient(circle at top right,rgba(22,49,74,.16),transparent 28%),
+                        radial-gradient(circle at bottom left,rgba(217,111,50,.18),transparent 25%),
+                        linear-gradient(160deg,#f8f3eb 0%,#f1ece4 48%,#ebe7df 100%); }
+        .page-shell { max-width:1200px; margin:0 auto; padding:28px 16px 60px; }
+        .panel,.hero-card { background:var(--panel); border:1px solid var(--line); border-radius:28px; box-shadow:0 16px 48px rgba(0,0,0,.08); padding:24px; margin-bottom:18px; }
+        .hero-card h1,.panel h2 { margin:0; font-family:"Space Grotesk",sans-serif; letter-spacing:-.04em; }
+        .hero-card p,.panel p { margin:8px 0 0; color:var(--muted); }
+        .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+        .btn-pill { border-radius:999px; padding:10px 20px; font-weight:700; }
+        .pill { display:inline-flex; align-items:center; gap:10px; margin-top:14px; margin-right:10px; padding:10px 14px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.9); font-weight:700; }
+        .pill small { color:var(--muted); font-weight:600; }
+
+        .stats-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px; }
+        .stat-chip { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px; text-align:center; }
+        .stat-chip .val { font-size:1.8rem; font-weight:700; color:var(--accent); font-family:"Space Grotesk",sans-serif; }
+        .stat-chip .lbl { font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-top:2px; }
+
+        .market-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+        .market-card { border-radius:18px; background:#fff; border:1px solid var(--line); padding:18px; }
+        .market-card .mkt-name { font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:6px; }
+        .market-card .mkt-rate { font-size:2.2rem; font-weight:700; font-family:"Space Grotesk",sans-serif; }
+        .market-card .mkt-rate.strong { color:var(--green); }
+        .market-card .mkt-rate.ok { color:var(--yellow); }
+        .market-card .mkt-rate.weak { color:var(--red); }
+        .market-card .mkt-sub { font-size:.88rem; color:var(--muted); margin-top:4px; }
+        .hit-bar-bg { height:6px; border-radius:99px; background:rgba(0,0,0,.08); margin-top:10px; }
+        .hit-bar-fill { height:100%; border-radius:99px; }
+        .fill-strong { background:var(--green); }
+        .fill-ok { background:#c9a200; }
+        .fill-weak { background:var(--red); }
+
+        /* Daily table */
+        table { width:100%; border-collapse:collapse; font-size:.88rem; }
+        th { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; padding:10px 12px; border-bottom:2px solid var(--line); cursor:pointer; white-space:nowrap; }
+        th:hover { color:var(--accent); }
+        td { padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+        tr:hover td { background:rgba(217,111,50,.04); }
+        .table-wrap { overflow-x:auto; }
+        .hit-strong { color:var(--green); font-weight:700; }
+        .hit-ok { color:var(--yellow); font-weight:600; }
+        .hit-weak { color:var(--red); font-weight:700; }
+
+        .quick-ranges { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+        .qr-btn { padding:6px 16px; border-radius:999px; border:1px solid var(--line); background:#fff; font-size:.85rem; font-weight:600; cursor:pointer; }
+        .qr-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+        .form-date-grid { display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end; margin-top:14px; }
+        .error-note { color:var(--red); margin-top:10px; }
+
+        /* Verdict banner */
+        .verdict { border-radius:18px; padding:20px 24px; margin-bottom:18px; border:1px solid var(--line); }
+        .verdict.strong { background:var(--green-bg); border-color:#a8dfc4; }
+        .verdict.weak { background:var(--red-bg); border-color:#f5c4b4; }
+        .verdict h3 { margin:0 0 6px; font-family:"Space Grotesk",sans-serif; }
+        .verdict p { margin:0; color:var(--muted); }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <div class="toolbar">
+        <div style="display:flex;gap:10px;">
+            <a href="/" class="btn btn-secondary btn-pill">Home</a>
+            <a href="/historical-backtest" class="btn btn-outline-secondary btn-pill">Single Date</a>
+        </div>
+        <span style="color:var(--muted);font-size:.85rem;">Batch Backtest</span>
+    </div>
+
+    <section class="hero-card">
+        <h1>Batch Backtest</h1>
+        <p>Run the model across an entire date range and aggregate accuracy — no waiting required.</p>
+        {% if overview %}
+        <div class="pill">Dataset <small>{{ overview.min_date }} — {{ overview.max_date }}</small></div>
+        {% endif %}
+        {% if batch_result %}
+        <div class="pill">Dates Run <small>{{ batch_result.dates_run }}</small></div>
+        <div class="pill">Total Predictions <small>{{ "{:,}".format(batch_result.total_predictions) }}</small></div>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <h2>Select Date Range</h2>
+        <div class="quick-ranges">
+            <span class="qr-btn" onclick="setRange(30)">Last 30 Days</span>
+            <span class="qr-btn" onclick="setRange(60)">Last 60 Days</span>
+            <span class="qr-btn" onclick="setFullSeason()">Full Season</span>
+            <span class="qr-btn" onclick="setMonth('2026-02')">February</span>
+            <span class="qr-btn" onclick="setMonth('2026-03')">March</span>
+        </div>
+        <form method="POST" action="/historical-backtest/batch">
+            <div class="form-date-grid">
+                <div>
+                    <label style="font-size:.82rem;color:var(--muted);font-weight:600;">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}"
+                        min="{{ overview.min_date if overview else '' }}" max="{{ overview.max_date if overview else '' }}">
+                </div>
+                <div>
+                    <label style="font-size:.82rem;color:var(--muted);font-weight:600;">End Date</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}"
+                        min="{{ overview.min_date if overview else '' }}" max="{{ overview.max_date if overview else '' }}">
+                </div>
+                <button type="submit" class="btn btn-primary btn-pill">Run Batch</button>
+            </div>
+        </form>
+        {% if batch_error %}<p class="error-note">{{ batch_error }}</p>{% endif %}
+    </section>
+
+    {% if batch_result and batch_result.dates_run > 0 %}
+
+    <!-- Stats bar -->
+    {% set pts = batch_result.market_summaries | selectattr("market", "equalto", "Points") | list | first %}
+    {% set ast = batch_result.market_summaries | selectattr("market", "equalto", "Assists") | list | first %}
+    {% set reb = batch_result.market_summaries | selectattr("market", "equalto", "Rebounds") | list | first %}
+    {% set pr = batch_result.market_summaries | selectattr("market", "equalto", "Points + Rebounds") | list | first %}
+    <div class="stats-bar">
+        <div class="stat-chip"><div class="val">{{ batch_result.dates_run }}</div><div class="lbl">Game Days</div></div>
+        <div class="stat-chip"><div class="val">{{ "{:,}".format(batch_result.total_predictions) }}</div><div class="lbl">Predictions</div></div>
+        {% if pts %}<div class="stat-chip"><div class="val">{{ pts.hit_rate }}%</div><div class="lbl">Points Accuracy</div></div>{% endif %}
+        {% if ast %}<div class="stat-chip"><div class="val">{{ ast.hit_rate }}%</div><div class="lbl">Assists Accuracy</div></div>{% endif %}
+        {% if reb %}<div class="stat-chip"><div class="val">{{ reb.hit_rate }}%</div><div class="lbl">Rebounds Accuracy</div></div>{% endif %}
+        {% if pr %}<div class="stat-chip"><div class="val">{{ pr.hit_rate }}%</div><div class="lbl">PR Accuracy</div></div>{% endif %}
+    </div>
+
+    <!-- Verdict -->
+    {% if pr and pr.hit_rate >= 60 %}
+    <div class="verdict strong">
+        <h3>Model Edge Confirmed</h3>
+        <p>Points + Rebounds hitting at {{ pr.hit_rate }}% across {{ pr.total }} predictions — statistically significant edge. This is real, not variance.</p>
+    </div>
+    {% elif pr and pr.hit_rate < 50 %}
+    <div class="verdict weak">
+        <h3>Edge Not Confirmed Yet</h3>
+        <p>Points + Rebounds at {{ pr.hit_rate }}% — below 50%. Do not bet until this improves with more data or retraining.</p>
+    </div>
+    {% endif %}
+
+    <!-- Market Summary -->
+    <section class="panel">
+        <h2>Market Accuracy</h2>
+        <p>Aggregated hit rate across {{ batch_result.dates_run }} game days, {{ "{:,}".format(batch_result.total_predictions) }} total predictions.</p>
+        <div class="market-grid" style="margin-top:16px;">
+            {% for row in batch_result.market_summaries %}
+            {% set rc = "strong" if row.hit_rate >= 60 else ("ok" if row.hit_rate >= 50 else "weak") %}
+            <div class="market-card">
+                <div class="mkt-name">{{ row.market }}</div>
+                <div class="mkt-rate {{ rc }}">{{ row.hit_rate }}%</div>
+                <div class="mkt-sub">{{ row.hit_count }}/{{ row.total }} hit &middot; MAE {{ row.mae }}</div>
+                <div class="hit-bar-bg">
+                    <div class="hit-bar-fill fill-{{ rc }}" style="width:{{ [row.hit_rate,100]|min }}%;"></div>
+                </div>
+                <small style="color:var(--muted);">Within ±{{ row.tolerance }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Day-by-day -->
+    <section class="panel">
+        <h2>Day-by-Day Breakdown</h2>
+        <p>Points, assists, and rebounds hit rate per game day. Click headers to sort.</p>
+        <div class="table-wrap" style="margin-top:14px;">
+            <table id="daily-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Date ↕</th>
+                        <th onclick="sortTable(1)">Players ↕</th>
+                        <th onclick="sortTable(2)">PTS Hit% ↕</th>
+                        <th onclick="sortTable(3)">PTS MAE ↕</th>
+                        <th onclick="sortTable(4)">AST Hit% ↕</th>
+                        <th onclick="sortTable(5)">AST MAE ↕</th>
+                        <th onclick="sortTable(6)">REB Hit% ↕</th>
+                        <th onclick="sortTable(7)">REB MAE ↕</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in batch_result.daily_summaries %}
+                    <tr>
+                        <td><strong>{{ row.date }}</strong></td>
+                        <td>{{ row.players }}</td>
+                        <td class="{{ 'hit-strong' if row.pts_hit_rate >= 60 else ('hit-ok' if row.pts_hit_rate >= 50 else 'hit-weak') }}">{{ row.pts_hit_rate }}%</td>
+                        <td>{{ row.pts_mae }}</td>
+                        <td class="{{ 'hit-strong' if row.ast_hit_rate >= 60 else ('hit-ok' if row.ast_hit_rate >= 50 else 'hit-weak') }}">{{ row.ast_hit_rate }}%</td>
+                        <td>{{ row.ast_mae }}</td>
+                        <td class="{{ 'hit-strong' if row.reb_hit_rate >= 60 else ('hit-ok' if row.reb_hit_rate >= 50 else 'hit-weak') }}">{{ row.reb_hit_rate }}%</td>
+                        <td>{{ row.reb_mae }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {% elif batch_result %}
+    <p style="color:var(--muted);">No data found for that date range.</p>
+    {% endif %}
+</div>
+
+<script>
+const maxDate = "{{ overview.max_date if overview else '' }}";
+const minDate = "{{ overview.min_date if overview else '' }}";
+
+function setRange(days) {
+    const end = new Date(maxDate);
+    const start = new Date(maxDate);
+    start.setDate(start.getDate() - days);
+    document.getElementById('start_date').value = start.toISOString().slice(0,10);
+    document.getElementById('end_date').value = end.toISOString().slice(0,10);
+}
+function setFullSeason() {
+    document.getElementById('start_date').value = minDate;
+    document.getElementById('end_date').value = maxDate;
+}
+function setMonth(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    const start = new Date(y, m-1, 1);
+    const end = new Date(y, m, 0);
+    document.getElementById('start_date').value = start.toISOString().slice(0,10);
+    document.getElementById('end_date').value = end.toISOString().slice(0,10);
+}
+
+let sortDir = {};
+function sortTable(col) {
+    const table = document.getElementById("daily-table");
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    const asc = !sortDir[col];
+    sortDir = {}; sortDir[col] = asc;
+    rows.sort((a, b) => {
+        const va = a.cells[col].textContent.trim().replace('%','');
+        const vb = b.cells[col].textContent.trim().replace('%','');
+        const na = parseFloat(va), nb = parseFloat(vb);
+        if (!isNaN(na) && !isNaN(nb)) return asc ? na - nb : nb - na;
+        return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+}
+</script>
+</body>
+</html>
