@@ -2488,8 +2488,8 @@ def _save_discrepancy_snapshot(discrepancies: list) -> None:
                 writer.writerow({"snapshot_date": today, **{k: d[k] for k in _DISCREPANCY_HISTORY_FIELDS[1:]}})
 
 
-@app.route('/line-discrepancy/export')
-def line_discrepancy_export():
+@app.route('/line-discrepancy/history')
+def line_discrepancy_history():
     if not _DISCREPANCY_HISTORY_PATH.exists():
         return Response("No history yet.", status=404)
     with open(_DISCREPANCY_HISTORY_PATH, newline="") as f:
